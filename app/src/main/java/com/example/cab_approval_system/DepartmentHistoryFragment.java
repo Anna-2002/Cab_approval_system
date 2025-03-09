@@ -25,15 +25,19 @@ import java.util.List;
 public class DepartmentHistoryFragment extends Fragment {
 
     private static final String ARG_TEAM = "team";
+    //adding email because its needed in fetchData() function
+    private static final String ARG_EMAIL = "email";
     private String requesterTeam;
+    private String requesterEmail;
 
     private History_adapter adapter;
     private final List<RequestModel> departmentRequestList = new ArrayList<>();
 
-    public static DepartmentHistoryFragment newInstance(String team) {
+    public static DepartmentHistoryFragment newInstance(String team,String email) {
         DepartmentHistoryFragment fragment = new DepartmentHistoryFragment();
         Bundle args = new Bundle();
         args.putString(ARG_TEAM, team);
+        args.putString(ARG_EMAIL, email);
         fragment.setArguments(args);
         return fragment;
     }
@@ -43,7 +47,9 @@ public class DepartmentHistoryFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             requesterTeam = getArguments().getString(ARG_TEAM);
+            requesterEmail = getArguments().getString(ARG_EMAIL);
             Log.d("DepartmentHistory", "Team: " + requesterTeam);
+            Log.d("DepartmentHistory", "Requester Email: " + requesterEmail);
         }
     }
 
@@ -56,7 +62,8 @@ public class DepartmentHistoryFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         adapter = new History_adapter(getContext(), departmentRequestList);
-        recyclerView.setAdapter(adapter);
+        recyclerView.setAdapter(adapter);  // Set adapter first
+
 
         fetchData();
 
@@ -72,18 +79,32 @@ public class DepartmentHistoryFragment extends Fragment {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         List<String> teamEmails = new ArrayList<>();
+                        String deptHeadEmail = null;
+                        boolean isHR = false;
 
                         for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                             String email = dataSnapshot.child("Official Email ID").getValue(String.class);
+                            String designation = dataSnapshot.child("Approval Matrix").getValue(String.class);
+
                             if (email != null) {
                                 teamEmails.add(email);
+                            }
+                            if (designation != null && designation.equals("FH")) {
+                                deptHeadEmail = email;
+                            }
+                            Log.d("DeptHis","email: "+email);
+                            Log.d("DeptHis","requester email: "+requesterEmail);
+                            if (designation != null && designation.equals("HR Head") && requesterEmail != null) {
+                                isHR = true;
                             }
                         }
 
                         Log.d("DepartmentHistory", "Team members count: " + teamEmails.size());
+                        Log.d("DepartmentHistory", "Department Head Email: " + deptHeadEmail);
+                        Log.d("DepartmentHistory", "Is HR: " + isHR);
 
                         // Now fetch Approved_requests filtered by these emails
-                        fetchApprovedRequests(teamEmails);
+                        fetchApprovedRequests(teamEmails,deptHeadEmail,isHR);
                     }
 
                     @Override
@@ -93,7 +114,8 @@ public class DepartmentHistoryFragment extends Fragment {
                 });
     }
 
-    private void fetchApprovedRequests(List<String> teamEmails) {
+    private void fetchApprovedRequests(List<String> teamEmails, String deptHeadEmail,boolean isHR) {
+        Log.d("DepartmentHistory", "isHR: " + isHR + ", DeptHeadEmail: " + deptHeadEmail);
         DatabaseReference approvedRequestsRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
                 .getReference("Approved_requests");
 
@@ -105,10 +127,14 @@ public class DepartmentHistoryFragment extends Fragment {
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     String requesterEmail = dataSnapshot.child("Emp_email").getValue(String.class);
 
+                    // Exclude department head's requests
                     if (requesterEmail != null && teamEmails.contains(requesterEmail)) {
-                        RequestModel request = dataSnapshot.getValue(RequestModel.class);
-                        if (request != null) {
-                            departmentRequestList.add(request);
+                        if (isHR || !requesterEmail.equals(deptHeadEmail)) {
+                            RequestModel request = dataSnapshot.getValue(RequestModel.class);
+                            if (request != null) {
+                                departmentRequestList.add(request);
+                                adapter.updateList(departmentRequestList);
+                            }
                         }
                     }
                 }
@@ -123,5 +149,6 @@ public class DepartmentHistoryFragment extends Fragment {
             }
         });
     }
+
 
 }

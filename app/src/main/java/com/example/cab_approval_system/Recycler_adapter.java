@@ -5,6 +5,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,7 +37,7 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
     private List<RequestModel> requestList;
     private String approverEmail, userRole;
     private Map<String, RequestModel> requestMap;
-    private DatabaseReference notificationRef, sheet1Ref, approvedByFHRef, approvedRequestsRef;
+    private DatabaseReference notificationRef, sheet1Ref, approvedByFHRef, approvedRequestsRef,rejectedRequestsRef;
     private ImageView notificationDot;
 
     public Recycler_adapter(Context context, List<RequestModel> requestList, String approverEmail, String userRole, ImageView notificationDot) {
@@ -53,6 +55,9 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
                 .getReference("Approved_requests");
         sheet1Ref = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
                 .getReference("Sheet1");
+        rejectedRequestsRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("Rejected_requests");
+
 
         requestMap = new HashMap<>();
 
@@ -87,8 +92,18 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
         holder.passengerCountTextView.setText(request.getNoOfPassengers());
         holder.approveFHName.setText(request.getApprovedFHName());
         holder.approvedFHEmail.setText(request.getApprovedFHEmail());
-        holder.FHApprovedTime.setText(request.getApprovedTime());
+        holder.FHApprovedTime.setText(request.getFH_Approved_Time());
 
+        // Reset Visibility Before Setting Conditions
+        holder.rejectReason_Text.setVisibility(View.GONE);
+        holder.rejectReasonTextview.setVisibility(View.GONE);
+        holder.rejectReasonEdittext.setVisibility(View.GONE);
+        holder.approve_button.setVisibility(View.VISIBLE);
+        holder.reject_button.setVisibility(View.VISIBLE);
+        holder.approved_display_textView.setVisibility(View.GONE);
+        holder.reject_display_textView.setVisibility(View.GONE);
+
+        // Ensure Passenger Details Are Always Reset
         holder.passengerLayout.removeAllViews();
         if (request.getPassengerMap() != null) {
             for (String passengerName : request.getPassengerMap().values()) {
@@ -100,6 +115,7 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
             }
         }
 
+        // HR Approval - Show Details Only If Approved By FH
         if (isHRUser() && "Approved by FH".equals(request.getStatus()) && request.isApprovedByFH()) {
             holder.pendingLayout.setVisibility(View.VISIBLE);
             holder.approvedFHemailLayout.setVisibility(View.VISIBLE);
@@ -114,6 +130,13 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
 
         holder.detailsLayout.setVisibility(View.GONE);
 
+        // Hide Approve/Reject Buttons for Approved Requests
+        if ("Ride approved successfully".equals(request.getStatus())) {
+            holder.approve_button.setVisibility(View.GONE);
+            holder.reject_button.setVisibility(View.GONE);
+            holder.approved_display_textView.setVisibility(View.VISIBLE);
+        }
+
         holder.drop_down_button.setOnClickListener(v -> {
             if (holder.detailsLayout.getVisibility() == View.VISIBLE) {
                 holder.detailsLayout.setVisibility(View.GONE);
@@ -124,158 +147,312 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
             }
         });
 
-        holder.approveChip.setOnClickListener(v -> {
+        // Approve Button Click Listener
+        holder.approve_button.setOnClickListener(v -> {
             Log.d("ApproveClick", "Approve button clicked for request: " + request.getRequestId());
-            approveRequest(request, holder.statusTextView, holder.approveChip);
+            approveRequest(request, holder.statusTextView, holder.approve_button,holder.reject_button, holder.approved_display_textView, holder.reject_display_textView);
         });
+
+        holder.reject_button.setOnClickListener(view -> {
+            rejectRequest(request, holder.statusTextView, holder.approve_button, holder.reject_button,
+                    holder.reject_display_textView, holder.reject_save_button, holder.rejectReasonEdittext, holder.rejectReasonTextview, holder.rejectReason_Text);
+        });
+
     }
 
-    private void approveRequest(RequestModel request, TextView statusTextView, Chip approveChip) {
+    private void approveRequest(RequestModel request, TextView statusTextView, ImageButton approve_button, ImageButton reject_button, TextView approved_display_textView, TextView reject_display_textView) {
         sheet1Ref.orderByChild("Official Email ID").equalTo(approverEmail)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (!snapshot.exists()) {
+                            Toast.makeText(context, "Approver details not found.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
 
-                if (!snapshot.exists()) {
-                    Toast.makeText(context, "Approver details not found.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                String approverName = "Unknown";
-                String approverRole = "Unknown";
+                        String approverName = "Unknown";
+                        String approverRole = "Unknown";
 
-                if (snapshot.exists()) {
-                    for (DataSnapshot data : snapshot.getChildren()) {
-                        approverName = data.child("Employee Name").getValue(String.class);
-                        approverRole = data.child("Approval Matrix").getValue(String.class);
-                        break;
-                    }
-                }
+                        for (DataSnapshot data : snapshot.getChildren()) {
+                            approverName = data.child("Employee Name").getValue(String.class);
+                            approverRole = data.child("Approval Matrix").getValue(String.class);
+                            break;
+                        }
 
-                if (approverName == null) {
-                    Log.e("ApprovalProcess", "Approver details missing " + approverEmail);
-                    Toast.makeText(context, "Approver details not found.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                        if (approverName == null) {
+                            Log.e("ApprovalProcess", "Approver details missing " + approverEmail);
+                            Toast.makeText(context, "Approver details not found.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
 
-                final String finalApproverName = approverName;
-                final String finalApproverRole = approverRole;
+                        final String finalApproverName = approverName;
+                        final String finalApproverRole = approverRole;
 
+                        // Use a boolean array to modify inside inner class
+                        final boolean[] isRequesterFH = {false};
 
-                DatabaseReference sourceRef = (finalApproverRole.equals("FH") ? notificationRef : approvedByFHRef);
-                DatabaseReference destinationRef = (finalApproverRole.equals("FH")? approvedByFHRef : approvedRequestsRef);
+                        sheet1Ref.orderByChild("Official Email ID").equalTo(request.getEmpEmail())
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot requesterSnapshot) {
+                                        for (DataSnapshot data : requesterSnapshot.getChildren()) {
+                                            String requesterRole = data.child("Approval Matrix").getValue(String.class);
+                                            if ("FH".equals(requesterRole)) {
+                                                isRequesterFH[0] = true; // Modify array element instead of local variable
+                                                break;
+                                            }
+                                        }
+                                        DatabaseReference sourceRef;
+                                        DatabaseReference destinationRef;
 
-                long requestIdLong = Long.parseLong(request.getRequestId());
-                Log.d("ID"," "+ requestIdLong);
-
-                sourceRef.orderByChild("request_id")
-                        .equalTo(requestIdLong)
-                        .addListenerForSingleValueEvent(new ValueEventListener() {
-
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot requestSnapshot) {
-                                 if (!requestSnapshot.exists()) {
-                                    Toast.makeText(context, "Request not found in the database.", Toast.LENGTH_SHORT).show();
-                                    return;
-                                }
-
-                                for (DataSnapshot snapshot : requestSnapshot.getChildren()) {
-                                    String key = snapshot.getKey(); // Get the actual key in Firebase
-
-                                    Map<String, Object> approvedData = new HashMap<>();
-                                    approvedData.put("Approved_time", new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault()).format(new Date()));
-                                    approvedData.put("Date", request.getDate());
-                                    approvedData.put("Approved_FH_name", finalApproverName);
-                                    approvedData.put("Approved_FH_email", approverEmail);
-                                    approvedData.put("Destination", request.getDropoffLocation());
-                                    approvedData.put("Emp_ID", request.getEmpId());
-                                    approvedData.put("Emp_name", request.getEmpName());
-                                    approvedData.put("Emp_email", request.getEmpEmail());
-                                    approvedData.put("Source", request.getPickupLocation());
-                                    approvedData.put("Purpose", request.getPurpose());
-                                    approvedData.put("Time", request.getTime());
-                                    approvedData.put("no_of_passengers", request.getNoOfPassengers());
-                                    approvedData.put("request_id", requestIdLong);
-
-                                    if (request.getPassengerMap() != null) {
-                                        approvedData.put("passengerNames", request.getPassengerMap());
-                                    }
-
-                                    if (finalApproverRole.equals("FH")) {
-                                        approvedData.put("Status", "Approved by FH");
-                                        approvedData.put("Pending", "HR approval pending");
-                                        approvedData.put("approvedByFH", true);
-                                        Log.d("FH name"," "+ finalApproverName);
-                                        Log.d("FH email"," "+ approverEmail);
-
-                                    } else {
-                                        approvedData.put("Status", "Ride approved successfully");
-                                        approvedData.put("approvedByFH", false);
-                                        // Keep FH details (already stored when FH approved)
-                                        approvedData.put("Approved_FH_name", request.getApprovedFHName());
-                                        approvedData.put("Approved_FH_email", request.getApprovedFHEmail());
-                                        // Add HR details
-                                        approvedData.put("Approved_HR_name", finalApproverName);
-
-                                        Log.d("FH name"," "+ request.getApprovedFHName());
-                                        Log.d("approver"," "+ approverEmail);
-                                        Log.d("Final approver"," "+ finalApproverName);
-                                        Log.d("FH email"," "+ request.getApprovedFHEmail());
-
-                                    }
-
-                                    destinationRef.child(request.getRequestId()).setValue(approvedData)
-                                            .addOnCompleteListener(task -> {
-                                        if (task.isSuccessful()) {
-                                            // Only delete after successful transfer
-                                            sourceRef.child(key).removeValue()
-                                                    .addOnCompleteListener(deleteTask -> {
-                                                if (deleteTask.isSuccessful()) {
-                                                    Toast.makeText(context, "Request approved", Toast.LENGTH_SHORT).show();
-                                                    statusTextView.setText(approvedData.get("Status").toString());
-                                                    approveChip.setVisibility(View.GONE);
-                                                } else {
-                                                    Toast.makeText(context, "Failed to remove old request.", Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
+                                        if (isRequesterFH[0]) {
+                                            // FH requests → Directly to HR
+                                            sourceRef = notificationRef;
+                                            destinationRef = approvedRequestsRef;
                                         } else {
-                                            Toast.makeText(context, "Approval failed.", Toast.LENGTH_SHORT).show();
+                                            // Normal Employee Flow: Employee → FH → HR
+                                            sourceRef = (finalApproverRole.equals("FH") ? notificationRef : approvedByFHRef);
+                                            destinationRef = (finalApproverRole.equals("FH") ? approvedByFHRef : approvedRequestsRef);
+                                        }
+
+                                        long requestIdLong = Long.parseLong(request.getRequestId());
+
+                                        sourceRef.orderByChild("request_id")
+                                                .equalTo(requestIdLong)
+                                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(@NonNull DataSnapshot requestSnapshot) {
+                                                        if (!requestSnapshot.exists()) {
+                                                            Toast.makeText(context, "Request not found in the database.", Toast.LENGTH_SHORT).show();
+                                                            return;
+                                                        }
+
+                                                        for (DataSnapshot snapshot : requestSnapshot.getChildren()) {
+                                                            String key = snapshot.getKey();
+
+
+                                                            String FHapprovedTime = snapshot.child("FH_Approved_Time").exists()
+                                                                    ? snapshot.child("FH_Approved_Time").getValue(String.class)
+                                                                    : new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
+
+                                                            Map<String, Object> approvedData = new HashMap<>();
+                                                            approvedData.put("FH_Approved_Time",FHapprovedTime);
+                                                            approvedData.put("Date", request.getDate());
+                                                            approvedData.put("Destination", request.getDropoffLocation());
+                                                            approvedData.put("Emp_ID", request.getEmpId());
+                                                            approvedData.put("Emp_name", request.getEmpName());
+                                                            approvedData.put("Emp_email", request.getEmpEmail());
+                                                            approvedData.put("Source", request.getPickupLocation());
+                                                            approvedData.put("Purpose", request.getPurpose());
+                                                            approvedData.put("Time", request.getTime());
+                                                            approvedData.put("no_of_passengers", request.getNoOfPassengers());
+                                                            approvedData.put("request_id", requestIdLong);
+
+                                                            if (request.getPassengerMap() != null) {
+                                                                approvedData.put("passengerNames", request.getPassengerMap());
+                                                            }
+
+                                                            if (isRequesterFH[0]) {
+                                                                // FH → HR Direct Approval
+                                                                approvedData.put("HR_Approved_Time",request.getHRApprovedTime());
+                                                                approvedData.put("Status", "Ride approved successfully");
+                                                                approvedData.put("Approved_HR_name", finalApproverName);
+                                                                approvedData.put("Approved_HR_email", approverEmail);
+                                                                approvedData.put("approvedByFH", false);
+
+                                                            } else if (finalApproverRole.equals("FH")) {
+                                                                // Normal Flow: FH Approval First
+                                                                approvedData.put("Status", "Approved by FH");
+                                                                approvedData.put("Pending", "HR approval pending");
+                                                                approvedData.put("Approved_FH_name", finalApproverName);
+                                                                approvedData.put("Approved_FH_email", approverEmail);
+                                                                approvedData.put("approvedByFH", true);
+                                                            } else {
+                                                                // HR Final Approval
+                                                                approvedData.put("HR_Approved_Time",new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault()).format(new Date()));
+                                                                approvedData.put("Status", "Ride approved successfully");
+                                                                approvedData.put("approvedByFH", false);
+                                                                approvedData.put("Approved_FH_name", request.getApprovedFHName());
+                                                                approvedData.put("Approved_FH_email", request.getApprovedFHEmail());
+                                                                approvedData.put("Approved_HR_name", finalApproverName);
+                                                                approvedData.put("Approved_HR_email", approverEmail);
+                                                            }
+
+                                                            destinationRef.child(request.getRequestId()).setValue(approvedData)
+                                                                    .addOnCompleteListener(task -> {
+                                                                        if (task.isSuccessful()) {
+                                                                            sourceRef.child(key).removeValue()
+                                                                                    .addOnCompleteListener(deleteTask -> {
+                                                                                        if (deleteTask.isSuccessful()) {
+                                                                                            Toast.makeText(context, "Request approved", Toast.LENGTH_SHORT).show();
+                                                                                            statusTextView.setText(approvedData.get("Status").toString());
+                                                                                            approve_button.setVisibility(View.GONE);
+                                                                                            reject_button.setVisibility(View.GONE);
+                                                                                            approved_display_textView.setVisibility(View.VISIBLE);
+                                                                                        } else {
+                                                                                            Toast.makeText(context, "Failed to remove old request.", Toast.LENGTH_SHORT).show();
+                                                                                        }
+                                                                                    });
+                                                                        } else {
+                                                                            Toast.makeText(context, "Approval failed.", Toast.LENGTH_SHORT).show();
+                                                                        }
+                                                                    });
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    public void onCancelled(@NonNull DatabaseError error) {
+                                                        Toast.makeText(context, "Database error.", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+                                        Toast.makeText(context, "Failed to fetch requester details.", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(context, "Failed to fetch approver details.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void rejectRequest(RequestModel request, TextView statusTextView,
+                               ImageButton approve_button, ImageButton reject_button,
+                               TextView reject_display_textView, Button reject_save_button,
+                               EditText reject_reason_editText, TextView reject_reason_textview, TextView rejectReason_Text) {
+
+        // Show reason input field and save button, hide reject button
+        rejectReason_Text.setVisibility(View.GONE);
+        reject_reason_editText.setVisibility(View.VISIBLE);
+        reject_save_button.setVisibility(View.VISIBLE);
+        reject_reason_textview.setVisibility(View.VISIBLE);
+        reject_button.setVisibility(View.GONE);
+        approve_button.setVisibility(View.GONE);
+
+        reject_save_button.setOnClickListener(view -> {
+            String rejectionReason = reject_reason_editText.getText().toString().trim();
+            if (rejectionReason.isEmpty()) {
+                Toast.makeText(context, "Please enter a reason for rejection.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            request.setRejectionReason(rejectionReason);
+
+            sheet1Ref.orderByChild("Official Email ID").equalTo(approverEmail)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (!snapshot.exists()) {
+                                Toast.makeText(context, "Approver details not found.", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            String approverName = "Unknown";
+                            String approverRole = "Unknown";
+
+                            for (DataSnapshot data : snapshot.getChildren()) {
+                                approverName = data.child("Employee Name").getValue(String.class);
+                                approverRole = data.child("Approval Matrix").getValue(String.class);
+                                break;
+                            }
+
+                            if (approverName == null) {
+                                Log.e("ApprovalProcess", "Approver details missing " + approverEmail);
+                                Toast.makeText(context, "Approver details not found.", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+
+                            final String finalApproverName = approverName;
+                            final String finalApproverRole = approverRole;
+
+                            long requestIdLong = Long.parseLong(request.getRequestId());
+
+                            DatabaseReference sourceRef = notificationRef; // Default
+                            if (request.isApprovedByFH()) {
+                                sourceRef = approvedByFHRef;
+                            }
+
+                            // Fetch request from source table
+                            sourceRef.orderByChild("request_id").equalTo(requestIdLong)
+                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot requestSnapshot) {
+                                            if (!requestSnapshot.exists()) {
+                                                Toast.makeText(context, "Request not found in the database.", Toast.LENGTH_SHORT).show();
+                                                return;
+                                            }
+
+                                            Map<String, Object> rejectedData = new HashMap<>();
+                                            rejectedData.put("request_id", requestIdLong);
+                                            rejectedData.put("Date", request.getDate());
+                                            rejectedData.put("Emp_ID", request.getEmpId());
+                                            rejectedData.put("Emp_name", request.getEmpName());
+                                            rejectedData.put("Emp_email", request.getEmpEmail());
+                                            rejectedData.put("Source", request.getPickupLocation());
+                                            rejectedData.put("Destination", request.getDropoffLocation());
+                                            rejectedData.put("Purpose", request.getPurpose());
+                                            rejectedData.put("Time", request.getTime());
+                                            rejectedData.put("no_of_passengers", request.getNoOfPassengers());
+                                            rejectedData.put("Reason", request.getRejectionReason());
+                                            rejectedData.put("rejected_by", finalApproverName + "," + finalApproverRole);
+                                            rejectedData.put("Status", "Request rejected");
+
+                                            rejectedRequestsRef.child(request.getRequestId()).setValue(rejectedData)
+                                                    .addOnCompleteListener(task -> {
+                                                        if (task.isSuccessful()) {
+                                                            // Remove the rejected request from the original table
+                                                            for (DataSnapshot childSnapshot : requestSnapshot.getChildren()) {
+                                                                childSnapshot.getRef().removeValue();
+                                                            }
+
+                                                            // Update UI
+                                                            statusTextView.setText("Request rejected");
+                                                            rejectReason_Text.setText(request.getRejectionReason());
+                                                            rejectReason_Text.setVisibility(View.VISIBLE);
+                                                            reject_reason_editText.setVisibility(View.GONE);
+                                                            reject_display_textView.setVisibility(View.VISIBLE);
+                                                            reject_display_textView.setVisibility(View.VISIBLE);
+                                                            reject_save_button.setVisibility(View.GONE);
+
+                                                            Toast.makeText(context, "Request rejected successfully.", Toast.LENGTH_SHORT).show();
+                                                        } else {
+                                                            Toast.makeText(context, "Rejection failed.", Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    });
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError error) {
+                                            Toast.makeText(context, "Database error.", Toast.LENGTH_SHORT).show();
                                         }
                                     });
-                                }
-                            }
+                        }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-                                Toast.makeText(context, "Database error.", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(context, "Failed to fetch approver details.", Toast.LENGTH_SHORT).show();
-            }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Toast.makeText(context, "Failed to fetch approver details.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
         });
     }
 
+
     private void fetchPendingHRApprovals() {
-        Log.d("HR_APPROVALS", "fetchPendingHRApprovals() called");
         approvedByFHRef.orderByChild("Pending").equalTo("HR approval pending")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         requestList.clear();
                         for (DataSnapshot data : snapshot.getChildren()) {
-                            Log.d("HR_APPROVALS", "Raw snapshot: " + data.getValue());
-
                             RequestModel request = data.getValue(RequestModel.class);  // Fetch full object directly
 
                             if (request != null) {
                                 request.setRequestId(String.valueOf(data.child("request_id").getValue(Long.class)));
                                 request.setApprovedByFH(Boolean.TRUE.equals(data.child("approvedByFH").getValue(Boolean.class)));
-
-                                Log.d("HR_APPROVALS", "Fetched request: " + request.getRequestId() + " | " + request.getStatus());
-
                                 requestList.add(request);
                             }
                         }
@@ -292,32 +469,32 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
 
     private void checkForHRNotifications() {
         if (!isHRUser()) {
-            // 🚫 If user is not HR, don't check notifications
-            return;
+            if (notificationDot != null) {
+                notificationDot.setVisibility(View.GONE); // Ensure employees don't see it
+            }
+            return; // Only HR should proceed further
         }
         approvedByFHRef.orderByChild("Pending").equalTo("HR approval pending")
                 .addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Log.d("HR_NOTIFICATIONS", "Total pending approvals: " + snapshot.getChildrenCount());
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        boolean hasPendingHRApprovals = snapshot.exists();  // This is the key check
+                        if (notificationDot != null) {
+                            notificationDot.setVisibility(hasPendingHRApprovals ? View.VISIBLE : View.GONE);
+                        }
+                    }
 
-                boolean hasPendingHRApprovals = snapshot.exists();  // This is the key check
-                if (notificationDot != null) {
-                    notificationDot.setVisibility(hasPendingHRApprovals ? View.VISIBLE : View.GONE);
-                    Log.d("HR_NOTIFICATIONS", "Notification dot " + (hasPendingHRApprovals ? "VISIBLE" : "HIDDEN"));
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("HR_NOTIFICATIONS", "Error checking notifications: " + error.getMessage());
-            }
-        });
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("HR_NOTIFICATIONS", "Error checking notifications: " + error.getMessage());
+                    }
+                });
     }
 
     private boolean isHRUser() {
         return "HR Head".equals(userRole);
     }
+
 
     @Override
     public int getItemCount() {
@@ -325,11 +502,12 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
     }
     public static class RequestViewHolder extends RecyclerView.ViewHolder {
 
-        TextView nameTextView, empIdTextView, empEmailTextView, pickupTextView,
-                dropoffTextView, dateTextView, timeTextView, pendingTextView,
+        TextView nameTextView, empIdTextView, empEmailTextView, pickupTextView, rejectReasonTextview,rejectReason_Text,
+                dropoffTextView, dateTextView, timeTextView, pendingTextView,approved_display_textView,reject_display_textView,
                 purposeTextView, statusTextView, passengerCountTextView,passenger_details_title,approveFHName,approvedFHEmail,FHApprovedTime;
-        Chip approveChip;
-        ImageButton drop_down_button;
+        Button reject_save_button;
+        EditText rejectReasonEdittext;
+        ImageButton drop_down_button,approve_button,reject_button;
         LinearLayout detailsLayout, passengerLayout, pendingLayout,approvedFHnameLayout,approvedFHemailLayout,FHapprovedTimeLayout;
 
         public RequestViewHolder(@NonNull View itemView) {
@@ -344,7 +522,6 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
             timeTextView = itemView.findViewById(R.id.time_textview);
             purposeTextView = itemView.findViewById(R.id.purpose_textview);
             statusTextView = itemView.findViewById(R.id.status_textview);
-            approveChip = itemView.findViewById(R.id.approve_chip);
             drop_down_button =  itemView.findViewById(R.id.drop_down_button);
             detailsLayout = itemView.findViewById(R.id.outer_layout);
             passengerCountTextView = itemView.findViewById(R.id.no_of_passengers_textview);
@@ -358,6 +535,15 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
             approvedFHnameLayout = itemView.findViewById(R.id.layout12);
             approvedFHemailLayout = itemView.findViewById(R.id.layout13);
             FHapprovedTimeLayout = itemView.findViewById(R.id.layout14);
+            approve_button = itemView.findViewById(R.id.approve_button);
+            reject_button = itemView.findViewById(R.id.reject_button);
+            approved_display_textView = itemView.findViewById(R.id.approved_display);
+            reject_display_textView = itemView.findViewById(R.id.reject_display);
+            reject_save_button = itemView.findViewById(R.id.reject_reason_save_button);
+            rejectReasonEdittext = itemView.findViewById(R.id.reject_reason_edittext);
+            rejectReasonTextview = itemView.findViewById(R.id.reject_reason_textview);
+            rejectReason_Text = itemView.findViewById(R.id.reject_reason);
+
         }
 
     }

@@ -266,7 +266,7 @@
 
         </LinearLayout>
 
-        <!-- Approver Name -->
+        <!-- FH Approver Name -->
 
         <LinearLayout
             android:id="@+id/layout9"
@@ -280,22 +280,22 @@
                 android:layout_width="95dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Approver Name:"
+                android:text="FH Approver Name:"
                 android:textColor="@color/text_color"
                 android:textSize="12sp"
                 android:textStyle="normal" />
 
             <TextView
-                android:id="@+id/approver_name_textview"
+                android:id="@+id/FH_approver_name_textview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="2dp"
                 android:layout_marginTop="8dp"
-                android:hint="Enter approver name"
+                android:hint="Enter FH approver name"
                 android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- Approved time -->
+        <!-- FH Approved time -->
 
         <LinearLayout
             android:id="@+id/layout10"
@@ -309,13 +309,13 @@
                 android:layout_width="95dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Approved Time:"
+                android:text="FH Approved Time:"
                 android:textColor="@color/text_color"
                 android:textSize="12sp"
                 android:textStyle="normal" />
 
             <TextView
-                android:id="@+id/approved_time_textview"
+                android:id="@+id/FH_approved_time_textview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="2dp"
@@ -324,7 +324,7 @@
                 android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- Approver email ID-->
+        <!-- FH Approver email ID-->
 
         <LinearLayout
             android:id="@+id/layout11"
@@ -338,18 +338,18 @@
                 android:layout_width="95dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Approver Email:"
+                android:text="FH Approver Email:"
                 android:textColor="@color/text_color"
                 android:textSize="12sp"
                 android:textStyle="normal" />
 
             <TextView
-                android:id="@+id/approver_email_textview"
+                android:id="@+id/FH_approver_email_textview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="2dp"
                 android:layout_marginTop="8dp"
-                android:hint="Enter approver email ID"
+                android:hint="Enter FH approver email ID"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -378,7 +378,64 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="2dp"
                 android:layout_marginTop="8dp"
-                android:hint="Approval status"
+                android:hint="Approved by FH/ Ride requested successfully"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+        <!-- Status -->
+
+        <LinearLayout
+            android:id="@+id/layout13"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layout12">
+
+            <TextView
+                android:id="@+id/pending_label"
+                android:layout_width="95dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Pending:"
+                android:textColor="@color/text_color"
+                android:textSize="12sp"
+                android:textStyle="normal" />
+
+            <TextView
+                android:id="@+id/pending_status_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="8dp"
+                android:hint="HR Approval pending"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/layout14"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layout13">
+
+            <TextView
+                android:layout_width="95dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Approved time:"
+                android:textColor="@color/text_color"
+                android:textSize="12sp"
+                android:textStyle="normal" />
+
+            <TextView
+                android:id="@+id/approved_time_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="8dp"
+                android:hint="Approved time"
                 android:textSize="12sp" />
 
         </LinearLayout>

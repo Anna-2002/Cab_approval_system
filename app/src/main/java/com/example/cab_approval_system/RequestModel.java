@@ -16,7 +16,7 @@ public class RequestModel {
     private String status;
     private String requestId;
     private String approverName;
-    private String approvedTime;
+    private String HRapprovedTime;
     private String approverEmail;
     private Map<String, String> passengerMap;
     private String noOfPassengers;
@@ -26,6 +26,8 @@ public class RequestModel {
     private boolean approvedByFH;
     private String Approved_FH_name;
     private String Approved_FH_email;
+    private String FH_Approved_Time;
+    private String rejectionReason;
 
     public RequestModel() {
         // Default constructor required for Firebase
@@ -153,14 +155,14 @@ public class RequestModel {
         this.approverName = approverName;
     }
 
-    @PropertyName("Approved_time")
-    public String getApprovedTime() {
-        return approvedTime;
+    @PropertyName("HR_Approved_Time")
+    public String getHRApprovedTime() {
+        return HRapprovedTime;
     }
 
-    @PropertyName("Approved_time")
-    public void setApprovedTime(String approvedTime) {
-        this.approvedTime = approvedTime;
+    @PropertyName("HR_Approved_Time")
+    public void setHRApprovedTime(String HRapprovedTime) {
+        this.HRapprovedTime = HRapprovedTime;
     }
 
     @PropertyName("Approver_email")
@@ -252,5 +254,26 @@ public class RequestModel {
     public void setApprovedFHEmail(String approvedFHEmail) {
         this.Approved_FH_email = approvedFHEmail;
     }
+
+    @PropertyName("FH_Approved_Time")
+    public String getFH_Approved_Time(){
+        return FH_Approved_Time;
+    }
+
+    @PropertyName("FH_Approved_Time")
+    public void setFH_Approved_Time(String FH_Approved_Time){
+        this.FH_Approved_Time = FH_Approved_Time;
+    }
+
+    @PropertyName("Reason for Rejection")
+    public  String getRejectionReason(){
+        return rejectionReason;
+    }
+
+    @PropertyName("Reason for Rejection")
+    public void setRejectionReason(String rejectionReason){
+        this.rejectionReason = rejectionReason;
+    }
+
 
 }

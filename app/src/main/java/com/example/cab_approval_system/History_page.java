@@ -78,19 +78,29 @@ public class History_page extends AppCompatActivity {
 
     private void setupViewPager() {
         boolean isFH = "FH".equals(requesterDesignation);
-        History_ViewPager adapter = new History_ViewPager(this, isFH, requesterEmail, requesterTeam);
+        boolean isHR = "HR Head".equals(requesterDesignation);
+        History_ViewPager adapter = new History_ViewPager(this, isFH,isHR, requesterEmail, requesterTeam);
         viewPager.setAdapter(adapter);
 
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
-            if (isFH) {
-                tab.setText(position == 0 ? "Personal History" : "Department History");
+            if (isHR) {
+                tab.setText(History_ViewPager.DEPARTMENTS.get(position)); // Set department names as tab titles
+            } else if (isFH) {
+                if (position == 0) {
+                    tab.setText("Personal History");
+                } else if (position == 1) {
+                    tab.setText("Approved Department Requests");
+                } else {
+                    tab.setText("Pending Approvals"); // Correct name for new tab
+                }
             } else {
-                tab.setText("Booking History");
+                if (position == 0) {
+                    tab.setText("Approved Requests History");
+                } else {
+                    tab.setText("Pending Approvals"); // Employees also have this tab
+                }
             }
         }).attach();
     }
 }
-
-
-
 
