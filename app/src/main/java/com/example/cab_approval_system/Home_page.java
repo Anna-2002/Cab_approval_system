@@ -1,8 +1,11 @@
 package com.example.cab_approval_system;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ImageButton;
@@ -13,18 +16,21 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class Home_page extends AppCompatActivity {
 
     private TextView emp_Name, empID, empTeam;
-    private DatabaseReference databaseReference;
+    private DatabaseReference databaseReference, vendorReference;
     private static ImageView notificationDot; // Notification dot
     private String user_email, user_role;
+    private LinearLayout emp_name_layout, emp_id_layout, team_Layout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
+
 
         // Get user details from intent
         user_email = getIntent().getStringExtra("email");
@@ -37,19 +43,35 @@ public class Home_page extends AppCompatActivity {
         empID = findViewById(R.id.emp_id_edit_text);
         empTeam = findViewById(R.id.emp_team_edit_text);
         notificationDot = findViewById(R.id.notification_dot);
-
+        emp_name_layout = findViewById(R.id.emp_name_layout);
+        emp_id_layout =  findViewById(R.id.emp_id_layout);
+        team_Layout =  findViewById(R.id.team_Layout);
         // Initialize buttons
         ImageButton request_ride = findViewById(R.id.request_ride);
         ImageButton pending_approvals = findViewById(R.id.pending_approvals);
         ImageButton cab_request = findViewById(R.id.cab_request);
 
         // Ensure user_role is assigned before checking visibility
-        updateButtonVisibility(user_role, pending_approvals, cab_request);
+        updateButtonVisibility(user_role, request_ride,pending_approvals, cab_request, emp_id_layout, team_Layout);
 
         // Initialize Firebase reference
         databaseReference = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
                 .getReference("Sheet1");
+        vendorReference = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("Vendor_details");
 
+
+        View[] blurView = {emp_name_layout, emp_id_layout, team_Layout};
+
+        for (View v : blurView) {
+            v.setLayerType(View.LAYER_TYPE_SOFTWARE, null); // Enable software rendering
+
+            // Apply blur only to the background, not text
+            if (v.getBackground() != null) {
+                v.getBackground().mutate().setFilterBitmap(true);
+                v.getBackground().setAlpha(200);  // Optional: Adjust transparency for better effect
+            }
+        }
         // Fetch user data & notifications
         if (user_email != null) {
             fetchUserData(user_email);
@@ -101,13 +123,13 @@ public class Home_page extends AppCompatActivity {
                 user_role = task.getResult().getValue(String.class);
 
                 // Now update the button visibility with the latest userRole
-                updateButtonVisibility(user_role, findViewById(R.id.pending_approvals), findViewById(R.id.cab_request));
+                updateButtonVisibility(user_role, findViewById(R.id.request_ride),findViewById(R.id.pending_approvals), findViewById(R.id.cab_request), findViewById(R.id.emp_id_layout), findViewById(R.id.team_Layout));
             }
         });
     }
 
 
-    private void updateButtonVisibility(String userRole, ImageButton pending_approvals, ImageButton cab_request) {
+    private void updateButtonVisibility(String userRole, ImageButton request_ride,ImageButton pending_approvals, ImageButton cab_request, LinearLayout emp_id_layout, LinearLayout team_Layout) {
         if (userRole == null) return; // Prevent null exceptions
 
         // Handle visibility based on user role
@@ -117,6 +139,13 @@ public class Home_page extends AppCompatActivity {
         } else if ("HR Head".equals(userRole) || "FH".equals(userRole)) {
             pending_approvals.setVisibility(View.VISIBLE);
             cab_request.setVisibility(View.GONE);
+        }else if("Vendor".equals(userRole)){
+            request_ride.setVisibility(View.GONE);
+            pending_approvals.setVisibility(View.GONE);
+            cab_request.setVisibility(View.VISIBLE);
+            emp_id_layout.setVisibility(View.GONE);
+            team_Layout.setVisibility(View.GONE);
+
         }
     }
 
@@ -126,14 +155,32 @@ public class Home_page extends AppCompatActivity {
             return;
         }
 
-        databaseReference.orderByChild("Official Email ID").equalTo(email)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        DataSnapshot dataSnapshot = task.getResult();
 
-                        if (dataSnapshot.exists()) {
-                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+        if ("Vendor".equals(user_role)) {
+            // Fetch from Vendor table if the user is a vendor
+            vendorReference.orderByChild("email_id").equalTo(email)
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful() && task.getResult().exists()) {
+                            for (DataSnapshot snapshot : task.getResult().getChildren()) {
+                                String vendorName = snapshot.child("name").getValue(String.class);
+                                if (vendorName != null) {
+                                    emp_Name.setText(vendorName);
+                                } else {
+                                    emp_Name.setText("Vendor");
+                                }
+                            }
+                        } else {
+                            Toast.makeText(Home_page.this, "Vendor details not found!", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        } else {
+            // Fetch from Sheet1 for regular employees
+            databaseReference.orderByChild("Official Email ID").equalTo(email)
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful() && task.getResult().exists()) {
+                            for (DataSnapshot snapshot : task.getResult().getChildren()) {
                                 String empId = String.valueOf(snapshot.child("Emp ID").getValue());
                                 String empName = String.valueOf(snapshot.child("Employee Name").getValue());
                                 String team = String.valueOf(snapshot.child("Team").getValue());
@@ -143,12 +190,10 @@ public class Home_page extends AppCompatActivity {
                                 empTeam.setText(team);
                             }
                         } else {
-                            Toast.makeText(Home_page.this, "User not found!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Home_page.this, "User details not found!", Toast.LENGTH_SHORT).show();
                         }
-                    } else {
-                        Toast.makeText(Home_page.this, "Failed to fetch data!", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                    });
+        }
     }
 
     private void checkForUnreadNotifications(String approverEmail) {

@@ -8,16 +8,6 @@
     android:orientation="vertical"
     android:padding="20dp"
     tools:context=".SignupTabFragment">
-
-    <!-- Image Section -->
-    <ImageView
-        android:id="@+id/registration_image"
-        android:layout_width="match_parent"
-        android:layout_height="180dp"
-        android:layout_marginTop="20dp"
-        android:layout_gravity="center"
-        android:src="@drawable/registration_icon" />
-
     <!-- ScrollView Section -->
     <ScrollView
         android:layout_width="match_parent"
@@ -33,67 +23,29 @@
             android:layout_gravity="center_horizontal"
             android:padding="20dp">
 
+            <!-- Image Section -->
+            <ImageView
+                android:id="@+id/registration_image"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:layout_marginTop="20dp"
+                android:layout_gravity="center"
+                android:src="@drawable/registration_icon" />
+
             <!-- Input Fields -->
             <EditText
                 android:id="@+id/signup_name"
                 android:layout_width="300dp"
                 android:layout_height="60dp"
                 android:layout_gravity="center"
-                android:background="@drawable/edittext_bkg"
-                android:drawableLeft="@drawable/baseline_emp_name"
                 android:drawablePadding="8dp"
+                android:background="@drawable/edittext_bkg"
+                android:elevation="10dp"
+                android:drawableLeft="@drawable/baseline_emp_name"
                 android:hint="Name"
                 android:padding="8dp"
                 android:textColor="@color/text_color"
                 android:textColorHint="@color/hint_color" />
-
-            <EditText
-                android:id="@+id/signup_emp_id"
-                android:layout_width="300dp"
-                android:layout_height="60dp"
-                android:layout_gravity="center"
-                android:layout_marginTop="20dp"
-                android:background="@drawable/edittext_bkg"
-                android:drawableLeft="@drawable/baseline_emp_id"
-                android:drawablePadding="8dp"
-                android:hint="Emp ID"
-                android:padding="8dp"
-                android:inputType="text"
-                android:textColor="@color/text_color"
-                android:textColorHint="@color/hint_color" />
-
-            <!-- Designation Spinner -->
-            <LinearLayout
-                android:layout_width="400dp"
-                android:layout_height="wrap_content"
-                android:background="@android:color/white"
-                android:layout_gravity="center"
-                android:orientation="vertical"
-                android:padding="10dp">
-
-                <TextView
-                    android:id="@+id/emp_designation"
-                    android:layout_width="300dp"
-                    android:layout_gravity="center"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:paddingBottom="8dp"
-                    android:text="@string/designation"
-                    android:textColor="@color/text_color"
-                    android:textSize="16sp" />
-
-                <Spinner
-                    android:id="@+id/designation_spinner"
-                    android:layout_width="300dp"
-                    android:layout_height="60dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/edittext_bkg"
-                    android:drawablePadding="8dp"
-                    android:hint="Select"
-                    android:padding="8dp"
-                    android:textColor="@color/text_color"
-                    android:textColorHint="@color/hint_color" />
-            </LinearLayout>
 
             <!-- Email Field -->
             <EditText
@@ -102,6 +54,7 @@
                 android:layout_height="60dp"
                 android:layout_gravity="center"
                 android:layout_marginTop="20dp"
+                android:elevation="10dp"
                 android:background="@drawable/edittext_bkg"
                 android:drawableLeft="@drawable/baseline_email_24"
                 android:drawablePadding="8dp"
@@ -109,6 +62,40 @@
                 android:padding="8dp"
                 android:textColor="@color/text_color"
                 android:textColorHint="@color/hint_color" />
+
+            <!-- Designation Spinner -->
+
+                <Spinner
+                    android:id="@+id/designation_spinner"
+                    android:layout_width="300dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/edittext_bkg"
+                    android:elevation="10dp"
+                    android:layout_marginTop="20dp"
+                    android:drawablePadding="8dp"
+                    android:hint="Select"
+                    android:padding="8dp"
+                    android:textColor="@color/text_color"
+                    android:textColorHint="@color/hint_color" />
+
+            <EditText
+                android:id="@+id/signup_emp_id"
+                android:layout_width="300dp"
+                android:layout_height="60dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/edittext_bkg"
+                android:elevation="10dp"
+                android:drawableLeft="@drawable/baseline_emp_id"
+                android:drawablePadding="8dp"
+                android:hint="Emp ID"
+                android:padding="8dp"
+                android:inputType="text"
+                android:textColor="@color/text_color"
+                android:textColorHint="@color/hint_color" />
+
+
 
             <!-- Password Field -->
             <EditText
@@ -121,6 +108,7 @@
                 android:drawableLeft="@drawable/baseline_lock_24"
                 android:drawablePadding="8dp"
                 android:hint="Password"
+                android:elevation="10dp"
                 android:maxLength="15"
                 android:inputType="textPassword"
                 android:padding="8dp"
@@ -134,6 +122,7 @@
                 android:layout_height="60dp"
                 android:layout_gravity="center"
                 android:layout_marginTop="20dp"
+                android:elevation="10dp"
                 android:maxLength="15"
                 android:background="@drawable/edittext_bkg"
                 android:drawableLeft="@drawable/baseline_password_24"
@@ -148,10 +137,12 @@
             <Button
                 android:id="@+id/signup_button"
                 android:layout_width="300dp"
-                android:layout_height="70dp"
+                android:layout_height="60dp"
                 android:layout_gravity="center"
                 android:layout_marginTop="30dp"
                 android:text="Signup"
+                android:background="@drawable/button_background"
+                android:elevation="10dp"
                 android:textSize="18sp"
                 app:cornerRadius="30dp" />
 
@@ -161,12 +152,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
-                android:visibility="gone"
                 android:layout_marginTop="20dp"
                 android:text="Go To Login"
                 android:textColor="@color/main_color"
                 android:textSize="14sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:visibility="gone" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

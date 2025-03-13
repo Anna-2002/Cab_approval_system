@@ -4,7 +4,7 @@
         <!--primary color band-->
         <item name="colorPrimary">@color/main_color</item> <!-- Action Bar color -->
         <item name="colorPrimaryVariant">@color/main_color</item>
-        <item name="colorOnPrimary">@color/backgroud_color</item>
+        <item name="colorOnPrimary">@color/background_color</item>
 
         <!--secondry color band-->
         <item name="colorSecondary">@color/secondary_light</item>

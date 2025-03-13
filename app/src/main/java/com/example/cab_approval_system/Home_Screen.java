@@ -3,8 +3,9 @@ package com.example.cab_approval_system;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ImageButton;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 
 public class Home_Screen extends AppCompatActivity {
     private String user_email,user_role;
@@ -23,12 +24,23 @@ public class Home_Screen extends AppCompatActivity {
     // This method sets up the bottom navigation buttons and their click listeners
     public static void setupBottomNavigation(Context context, String user_email, String user_role) {
         // Initialize the ImageButtons with context
-        ImageButton homeImageBtn = ((AppCompatActivity) context).findViewById(R.id.home_image_button);
-        ImageButton historyImageBtn = ((AppCompatActivity) context).findViewById(R.id.history_image_button);
-        ImageButton profileImageBtn = ((AppCompatActivity) context).findViewById(R.id.profile_image_button);
+        CardView homeButton = ((AppCompatActivity) context).findViewById(R.id.home_cardview);
+        CardView historyButton = ((AppCompatActivity) context).findViewById(R.id.history_cardview);
+        CardView profileButton = ((AppCompatActivity) context).findViewById(R.id.profile_cardview);
+
+
+        // Make sure CardView is clickable
+        homeButton.setClickable(true);
+        historyButton.setClickable(true);
+        profileButton.setClickable(true);
+
+        // Fix: Allow click events to work properly
+        homeButton.setFocusable(true);
+        historyButton.setFocusable(true);
+        profileButton.setFocusable(true);
 
         // Set up onClick listeners for navigation
-        homeImageBtn.setOnClickListener(v -> {
+        homeButton.setOnClickListener(v -> {
             // Navigate to Home page
             Intent intent = new Intent(context, Home_page.class);
             intent.putExtra("email", user_email);
@@ -37,14 +49,14 @@ public class Home_Screen extends AppCompatActivity {
             context.startActivity(intent);
         });
 
-        historyImageBtn.setOnClickListener(v -> {
+        historyButton.setOnClickListener(v -> {
             // Navigate to History page
             Intent intent = new Intent(context, History_page.class);
             intent.putExtra("email",user_email);
             context.startActivity(intent);
         });
 
-        profileImageBtn.setOnClickListener(v -> {
+        profileButton.setOnClickListener(v -> {
             // Navigate to Profile page
             Intent intent = new Intent(context, Profile_page.class);
             intent.putExtra("email",user_email);

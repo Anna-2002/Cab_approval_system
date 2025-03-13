@@ -37,13 +37,16 @@ import java.util.Map;
 public class Request_ride extends AppCompatActivity {
 
     private ImageButton time_picker_button, date_picker_button, decrease_button, increase_button;
-    private TextView time_selected, date_selected, people_count, num_of_riders_edit_text, passengers_details, passenger_name_display;
+    private TextView time_selected, date_selected, people_count, num_of_riders_edit_text,
+            passengers_details, passenger_name_display, request_heading;
     private View num_of_people_horizontal_layout;
     private ToggleButton select_toggle_button;
     private Button request_button,save_button;
     private EditText pickup, dropoff,purpose_of_ride;
     private String email_id;
-    private LinearLayout passenger_layout, main_passenger_layout;
+    private LinearLayout passenger_layout, main_passenger_layout, source_layout,
+            destination_layout, time_picker_layout, date_picker_layout, purpose_layout,
+            outer_num_of_passenger_layout, inner_num_of_passenger_layout, passengerdetails_layout;
     private int passenger_count;
     Map<String, String> passengerMap = new HashMap<>();
 
@@ -53,6 +56,17 @@ public class Request_ride extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_request_ride);
 
+
+        request_heading = findViewById(R.id.request_heading);
+        source_layout =  findViewById(R.id.source_layout);
+        destination_layout =  findViewById(R.id.destination_layout);
+        time_picker_layout = findViewById(R.id.time_picker_layout);
+        date_picker_layout = findViewById(R.id.date_picker_layout);
+        purpose_layout = findViewById(R.id.purpose_layout);
+        outer_num_of_passenger_layout =  findViewById(R.id.outer_num_of_passenger_layout);
+        inner_num_of_passenger_layout =  findViewById(R.id.inner_num_of_passenger_layout);
+        passengerdetails_layout = findViewById(R.id.passengerdetails_layout);
+
         initializeUI();
 
         // methods for specific functionalities in UI
@@ -60,6 +74,19 @@ public class Request_ride extends AppCompatActivity {
         setupCountButtons();
         setupToggleButton();
         setupRequestButton();
+
+        View[] blurView = {request_heading, passenger_layout, source_layout, destination_layout, time_picker_layout, date_picker_layout, purpose_layout, outer_num_of_passenger_layout,
+                inner_num_of_passenger_layout, main_passenger_layout, passengerdetails_layout};
+
+        for (View v : blurView) {
+            v.setLayerType(View.LAYER_TYPE_SOFTWARE, null); // Enable software rendering
+
+            // Apply blur only to the background, not text
+            if (v.getBackground() != null) {
+                v.getBackground().mutate().setFilterBitmap(true);
+                v.getBackground().setAlpha(200);  // Optional: Adjust transparency for better effect
+            }
+        }
 
         // Subscribe to Firebase topic for notifications
         FirebaseMessaging.getInstance().subscribeToTopic("ride_requests")

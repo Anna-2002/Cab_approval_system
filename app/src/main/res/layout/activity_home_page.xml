@@ -1,88 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Home_page">
 
+
     <include
         android:id="@+id/include"
         layout="@layout/header"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <LinearLayout
         android:id="@+id/emp_name_layout"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
+        android:background="@drawable/edittext_bkg"
         android:orientation="horizontal"
         android:padding="15dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
+        android:elevation="10dp"
+        app:layout_constraintStart_toStartOf="@id/guideline_left"
+        app:layout_constraintEnd_toEndOf="@id/guideline_right"
         app:layout_constraintTop_toBottomOf="@+id/include">
 
-        <!-- TextView for label -->
+        <!-- Welcome Text -->
         <TextView
             android:id="@+id/emp_name_welcome"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingBottom="8dp"
+            android:paddingEnd="8dp"
             android:text="@string/welcome"
             android:textColor="@android:color/black"
-            android:textSize="24sp"
+            android:textSize="26sp"
             android:textStyle="bold" />
 
-        <!-- TextView for input -->
+        <!-- Employee Name Text -->
         <TextView
             android:id="@+id/emp_name_fetch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:paddingEnd="8dp"
             android:hint="@string/emp_name"
-            android:padding="18dp"
-            android:inputType="text"
-            android:textSize="24sp"
-            android:textStyle="italic"
-            tools:ignore="TouchTargetSizeCheck" />
-
-        <TextView
-            android:id="@+id/emp_name_comma"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="8dp"
-            android:text="@string/comma"
-            android:textColor="@android:color/black"
-            android:textSize="24sp"
+            android:textColor="@color/text_color"
+            android:textSize="26sp"
             android:textStyle="italic" />
 
+        <!-- Comma (,) Text -->
+        <TextView
+            android:id="@+id/emp_name_comma"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/comma"
+            android:textColor="@android:color/black"
+            android:textSize="26sp"
+            android:textStyle="italic" />
     </LinearLayout>
+
 
     <!-- Emp ID -->
     <LinearLayout
         android:id="@+id/emp_id_layout"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:elevation="10dp"
         android:padding="10dp"
-        app:layout_constraintTop_toBottomOf="@+id/emp_name_layout"
-        android:background="@android:color/white">
+        android:background="@drawable/edittext_bkg"
+        android:orientation="vertical"
+        android:layout_marginTop="35dp"
+        app:layout_constraintStart_toStartOf="@id/guideline_left"
+        app:layout_constraintEnd_toEndOf="@id/guideline_right"
+        app:layout_constraintTop_toBottomOf="@+id/emp_name_layout">
 
         <!-- TextView for label -->
         <TextView
             android:id="@+id/emp_id_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
+            android:elevation="10dp"
             android:text="@string/emp_id"
-            android:textSize="16sp"
             android:textColor="@android:color/black"
-            android:paddingBottom="8dp" />
+            android:textSize="16sp" />
 
         <!-- TextView for input -->
         <TextView
@@ -90,23 +91,28 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
+            android:elevation="10dp"
             android:background="@drawable/edittext_bkg"
             android:hint="@string/emp_id"
+            android:inputType="number"
             android:padding="12dp"
             android:textSize="16sp"
-            android:inputType="number"
             tools:ignore="TouchTargetSizeCheck" />
 
     </LinearLayout>
 
     <!-- Emp team -->
     <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="match_parent"
+        android:id="@+id/team_Layout"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
+        android:elevation="10dp"
+        android:background="@drawable/edittext_bkg"
         android:orientation="vertical"
         android:padding="10dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintStart_toStartOf="@id/guideline_left"
+        app:layout_constraintEnd_toEndOf="@id/guideline_right"
         app:layout_constraintTop_toBottomOf="@+id/emp_id_layout">
 
         <!-- TextView for label -->
@@ -115,6 +121,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="8dp"
+            android:elevation="10dp"
             android:text="@string/emp_team"
             android:textColor="@android:color/black"
             android:textSize="16sp" />
@@ -128,6 +135,7 @@
             android:background="@drawable/edittext_bkg"
             android:hint="@string/emp_team"
             android:inputType="text"
+            android:elevation="10dp"
             android:padding="12dp"
             android:textSize="16sp"
             tools:ignore="TouchTargetSizeCheck" />
@@ -145,14 +153,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        app:layout_constraintTop_toBottomOf="@+id/team_Layout"
         app:layout_constraintVertical_bias="0.641">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_gravity="center_horizontal">
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal">
 
             <!-- First Image Button -->
 
@@ -205,11 +213,39 @@
     </HorizontalScrollView>
 
     <include
-    android:id="@+id/include1"
-    layout="@layout/activity_home_screen"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent" />
+        android:id="@+id/include1"
+        layout="@layout/activity_home_screen"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.04" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.04" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.96" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.88" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -30,7 +30,7 @@
     <string name="select">Select</string>
     <string name="change">Change</string>
     <string name="designation">Designation</string>
-    <string name="enter_date">Enter Date</string>
+    <string name="enter_date">Enter date</string>
     <string name="employee_email_id">Employee Email ID :</string>
     <string name="employee_name">Employee Name :</string>
     <string name="email_id">Email ID:</string>
@@ -44,8 +44,10 @@
         <item> Customer Project</item>
     </string-array>
     <string-array name="designation_array">
+        <item> Select designation </item>
         <item> Employee </item>
         <item> Intern </item>
         <item> Contract </item>
+        <item> Vendor </item>
     </string-array>
 </resources>

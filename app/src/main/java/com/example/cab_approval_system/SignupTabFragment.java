@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,7 +29,7 @@ import java.util.Objects;
 
 public class SignupTabFragment extends Fragment {
 
-    private DatabaseReference databaseReference, employeeReference, internReference;
+    private DatabaseReference databaseReference, employeeReference, internReference, vendorReference;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -46,6 +47,8 @@ public class SignupTabFragment extends Fragment {
                 .getReference("Sheet1");
         internReference = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
                 .getReference("Interns_data");
+        vendorReference = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("Vendor_details");
 
         // Initialize views
         EditText employeeIdField = view.findViewById(R.id.signup_emp_id);
@@ -66,6 +69,39 @@ public class SignupTabFragment extends Fragment {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         designationSpinner.setAdapter(adapter);
 
+
+        View[] blurView = {emailField, passwordField, employeeIdField, nameField, passwordField, confirmPasswordField, submitButton, loginPageLink, designationSpinner };
+
+        for (View v : blurView) {
+            v.setLayerType(View.LAYER_TYPE_SOFTWARE, null); // Enable software rendering
+
+            // Apply blur only to the background, not text
+            if (v.getBackground() != null) {
+                v.getBackground().mutate().setFilterBitmap(true);
+                v.getBackground().setAlpha(200);  // Optional: Adjust transparency for better effect
+            }
+        }
+
+        // setting the emp id field disbaled or enable based on designation
+        designationSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedDesignation = parent.getItemAtPosition(position).toString();
+
+                if (selectedDesignation.equals("Vendor")) {
+                    employeeIdField.setEnabled(false);
+                    employeeIdField.setText(String.valueOf(0));
+                } else {
+                    employeeIdField.setEnabled(true);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Do nothing
+            }
+        });
+
         // Set initial visibility of the login link
         loginPageLink.setVisibility(View.GONE);
 
@@ -85,6 +121,8 @@ public class SignupTabFragment extends Fragment {
                 validateAndRegisterEmployee(employeeId, name, email, password, loginPageLink);
             } else if (designation.equals("Intern")) {
                 validateAndRegisterIntern(employeeId, name, email, password, loginPageLink);
+            } else if (designation.equals("Vendor")) {
+                validateAndRegisterVendor(vendorReference, "email_id", "0", email, name, password, loginPageLink);
             }
         });
 
@@ -150,16 +188,56 @@ public class SignupTabFragment extends Fragment {
     }
 
     private void validateAndRegisterIntern(String employeeId, String name, String email, String password, TextView loginPageLink) {
-        internReference.orderByChild("email_id").equalTo(email)
+        internReference.orderByChild("Official Email ID").equalTo(email)
                 .get()
                 .addOnCompleteListener(task -> {
+                    Log.d("Email id"," "+email);
                     if (task.isSuccessful() && task.getResult().exists()) {
-                        saveRegistrationData(employeeId, name, email, password, loginPageLink);
+                        boolean isValid = false;
+                        String dbEmpId = "";
+                        for (DataSnapshot snapshot : task.getResult().getChildren()) {
+                            if (snapshot.child("Emp ID").exists()) {
+                                Long empIdLong = snapshot.child("Emp ID").getValue(Long.class);
+                                if (empIdLong != null) {
+                                    dbEmpId = empIdLong.toString();
+                                }
+                            }
+                            if (dbEmpId.equals(employeeId)) {
+                                isValid = true;
+                                break;
+                            }
+                        }
+                        if (isValid) {
+                            saveRegistrationData(employeeId, name, email, password, loginPageLink);
+                        } else {
+                            Toast.makeText(getContext(), "Intern ID mismatch!", Toast.LENGTH_SHORT).show();
+                        }
                     } else {
                         Toast.makeText(getContext(), "Intern not found in the system!", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
+
+    private void validateAndRegisterVendor(DatabaseReference reference, String idKey, String employeeId, String email, String name, String password, TextView loginPageLink) {
+        reference.orderByChild(idKey).equalTo(email).get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DataSnapshot snapshot = task.getResult();
+
+                        if (snapshot.exists()) {
+                            for (DataSnapshot data : snapshot.getChildren()) {
+                            }
+                            saveRegistrationData(employeeId, name, email, password, loginPageLink);
+                        } else {
+                        }
+                    } else {
+                        Exception e = task.getException();
+                        Toast.makeText(getContext(), "Database error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+
 
     private void saveRegistrationData(String employeeId, String name, String email, String password, TextView loginPageLink) {
         // Check if the user is already registered in the Registration_data node

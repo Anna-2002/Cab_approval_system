@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="text_color">#FF000000</color>
-    <color name="backgroud_color">#FFFFFFFF</color>
+    <color name="background_color">#FFFFFFFF</color>
     <color name="action_bar_color">#0F032A</color> <!-- Replace with your preferred color -->
     <color name="action_bar_dark">#070F42</color> <!-- For status bar -->
     <color name="border_color">#D1D3D9</color>

@@ -45,7 +45,7 @@
             android:exported="false" />
         <activity
             android:name=".Home_page"
-            android:exported="false" />
+            android:exported="false"/>
         <activity
             android:name=".Home_Screen"
             android:exported="false"

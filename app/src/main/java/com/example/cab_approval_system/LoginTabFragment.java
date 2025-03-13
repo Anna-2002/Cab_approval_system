@@ -1,8 +1,10 @@
 package com.example.cab_approval_system;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.BlurMaskFilter;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -10,10 +12,12 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -22,8 +26,11 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class LoginTabFragment extends Fragment {
 
-    private DatabaseReference databaseReference,  employeeReference;
+    private DatabaseReference databaseReference, employeeReference;
+
     private SharedPreferences shared_userRole;
+
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -34,8 +41,39 @@ public class LoginTabFragment extends Fragment {
         EditText passwordField = view.findViewById(R.id.login_password);
         Button loginButton = view.findViewById(R.id.login_button);
         Button registrationButton = view.findViewById(R.id.registration_button);
+        ImageView login_image = view.findViewById(R.id.login_image);
+
+
+        View[] blurView = {emailField, passwordField, loginButton, registrationButton, login_image};
+
+        for (View v : blurView) {
+            v.setLayerType(View.LAYER_TYPE_SOFTWARE, null); // Enable software rendering
+
+            // Apply blur only to the background, not text
+            if (v.getBackground() != null) {
+                v.getBackground().mutate().setFilterBitmap(true);
+                v.getBackground().setAlpha(200);  // Optional: Adjust transparency for better effect
+            }
+        }
+
 
         shared_userRole = requireActivity().getSharedPreferences("UserRole", Context.MODE_PRIVATE);
+
+        loginButton.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: // When button is pressed
+                    v.animate().scaleX(0.97f).scaleY(0.97f).setDuration(100).start();
+                    v.setAlpha(0.8f); // Slight transparency for a glossy effect
+                    break;
+                case MotionEvent.ACTION_UP:   // When button is released
+                case MotionEvent.ACTION_CANCEL:
+                    v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start();
+                    v.setAlpha(1.0f); // Restore original transparency
+                    break;
+            }
+            return false;
+        });
+
         // Login button click listener
         loginButton.setOnClickListener(v -> {
             String email = emailField.getText().toString().trim();
@@ -119,16 +157,38 @@ public class LoginTabFragment extends Fragment {
                                     saveUserSession(email, userRole);
                                     navigateToHome(email, userRole);
                                     return;
-                                } else {
-                                    Toast.makeText(getContext(), "Role not found for this user", Toast.LENGTH_SHORT).show();
                                 }
                             }
-                        } else {
-                            Toast.makeText(getContext(), "User not found in Sheet1 table", Toast.LENGTH_SHORT).show();
+                            // If role is not found in Sheet1, check Vendor_details
+                            Toast.makeText(getContext(), "Role not found in Sheet1, checking Vendor table...", Toast.LENGTH_SHORT).show();
                         }
-                    } else {
-                        Toast.makeText(getContext(), "Error connecting to Sheet1 table", Toast.LENGTH_SHORT).show();
                     }
+                    // If email not found in Sheet1, check Vendor_details
+                    checkVendorTable(email);
+                });
+    }
+
+    private void checkVendorTable(String email) {
+        DatabaseReference vendorReference = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("Vendor_details");
+
+        vendorReference.orderByChild("email_id").equalTo(email)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        DataSnapshot result = task.getResult();
+                        if (result.exists()) {
+                            for (DataSnapshot snapshot : result.getChildren()) {
+                                String userRole = snapshot.child("designation").getValue(String.class);
+                                if (userRole != null) {
+                                    saveUserSession(email, userRole);
+                                    navigateToHome(email, userRole);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    Toast.makeText(getContext(), "User role not found in Sheet1 or Vendor table", Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -149,7 +209,5 @@ public class LoginTabFragment extends Fragment {
             getActivity().finish();
         }
     }
-
-
 
 }
