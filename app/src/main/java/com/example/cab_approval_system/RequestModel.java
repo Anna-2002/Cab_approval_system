@@ -28,10 +28,17 @@ public class RequestModel {
     private String Approved_FH_email;
     private String FH_Approved_Time;
     private String rejectionReason;
+    private String HR_approver_name;
 
     public RequestModel() {
         // Default constructor required for Firebase
     }
+    @PropertyName("Approved_HR_name")
+    public String getHR_approver_name() {return HR_approver_name;}
+
+    @PropertyName("Approved_HR_name")
+    public void setHR_approver_name(String HR_approver_name){
+        this.HR_approver_name = HR_approver_name;}
 
     @PropertyName("Emp_name")
     public String getEmpName() {

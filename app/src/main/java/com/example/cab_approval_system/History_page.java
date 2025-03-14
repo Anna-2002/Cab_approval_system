@@ -103,4 +103,3 @@ public class History_page extends AppCompatActivity {
         }).attach();
     }
 }
-

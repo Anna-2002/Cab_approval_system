@@ -63,7 +63,11 @@ public class CabRequestAdapter extends RecyclerView.Adapter<CabRequestAdapter.Vi
             holder.dropDownButton.setImageResource(isExpanded ? R.drawable.baseline_arrow_drop_down_24 : R.drawable.baseline_arrow_drop_up_24);
         });
 
-        holder.addDriverDetailsButton.setOnClickListener(v -> holder.driverDetailsLayout.setVisibility(View.VISIBLE));
+        holder.addDriverDetailsButton.setOnClickListener(v -> {
+            holder.driverDetailsLayout.setVisibility(View.VISIBLE);
+            holder.driver_details_title.setVisibility(View.VISIBLE);
+            holder.addDriverDetailsButton.setVisibility(View.GONE);
+        });
 
         // Save button logic
         holder.saveButton.setOnClickListener(v -> {
@@ -84,12 +88,13 @@ public class CabRequestAdapter extends RecyclerView.Adapter<CabRequestAdapter.Vi
                 holder.driverMobileEditText.setVisibility(View.GONE);
                 holder.cabNumberEditText.setVisibility(View.GONE);
 
+                holder.saveButton.setVisibility(View.GONE);
                 holder.driver_name_stored.setVisibility(View.VISIBLE);
                 holder.driver_mobileNum_stored.setVisibility(View.VISIBLE);
                 holder.cab_num_stored.setVisibility(View.VISIBLE);
 
 
-                holder.driverDetailsLayout.setVisibility(View.GONE);
+                holder.driverDetailsLayout.setVisibility(View.VISIBLE);
             } else {
                 Toast.makeText(context, "Please fill all details", Toast.LENGTH_SHORT).show();
             }
@@ -116,7 +121,7 @@ public class CabRequestAdapter extends RecyclerView.Adapter<CabRequestAdapter.Vi
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView empNameTextView, empEmailTextView, empMobileTextView, sourceTextView,
                 destinationTextView, dateTextView, timeTextView, numberOfPassengerTextView,
-                driver_name_stored, driver_mobileNum_stored, cab_num_stored;
+                driver_name_stored, driver_mobileNum_stored, cab_num_stored, driver_details_title;
         ImageButton dropDownButton;
         LinearLayout detailsLayout, driverDetailsLayout;
         Button addDriverDetailsButton, saveButton, sendButton;
@@ -148,6 +153,7 @@ public class CabRequestAdapter extends RecyclerView.Adapter<CabRequestAdapter.Vi
             driver_name_stored = itemView.findViewById(R.id.driver_name_stored);
             driver_mobileNum_stored = itemView.findViewById(R.id.driver_num_stored);
             cab_num_stored = itemView.findViewById(R.id.cab_num_stored);
+            driver_details_title =  itemView.findViewById(R.id.driver_details_title_textview);
 
         }
     }

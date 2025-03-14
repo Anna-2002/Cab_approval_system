@@ -29,7 +29,7 @@ public class History_ViewPager extends FragmentStateAdapter {
             "EMA"
     );
 
-    public History_ViewPager(@NonNull FragmentActivity fragmentActivity, boolean isFH, boolean isHR, String requesterEmail, String requesterTeam) {
+    public History_ViewPager (@NonNull FragmentActivity fragmentActivity, boolean isFH, boolean isHR, String requesterEmail, String requesterTeam) {
         super(fragmentActivity);
         this.isFH = isFH;
         this.isHR = isHR;

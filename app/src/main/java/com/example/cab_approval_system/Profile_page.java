@@ -18,7 +18,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-public class Profile_page extends AppCompatActivity {
+public class
+Profile_page extends AppCompatActivity {
 
     private TextView passwordTextView;
     private EditText passwordEditText;

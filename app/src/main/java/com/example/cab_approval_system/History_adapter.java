@@ -15,10 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class History_adapter extends RecyclerView.Adapter<History_adapter.HistoryViewHolder> {
@@ -45,12 +45,6 @@ public class History_adapter extends RecyclerView.Adapter<History_adapter.Histor
             return;
         }
 
-
-        if (approvedRequestList == null || approvedRequestList.isEmpty()) {
-            Log.e("HistoryAdapter", "approvedRequestList is null or empty!");
-            return;
-        }
-
         RequestModel request = approvedRequestList.get(position);
         if (request == null) {
             Log.e("HistoryAdapter", "RequestModel is null at position: " + position);
@@ -68,6 +62,7 @@ public class History_adapter extends RecyclerView.Adapter<History_adapter.Histor
         holder.timeTextView.setText(request.getTime() != null ? request.getTime() : "N/A");
         holder.purposeTextView.setText(request.getPurpose() != null ? request.getPurpose() : "N/A");
         holder.statusTextView.setText(request.getStatus() != null ? request.getStatus() : "N/A");
+
         if (request.getPendingStatus() != null && !request.getPendingStatus().equalsIgnoreCase("N/A")) {
             holder.pendingStatus.setText(request.getPendingStatus());
             holder.pendingStatus.setVisibility(View.VISIBLE);
@@ -76,8 +71,9 @@ public class History_adapter extends RecyclerView.Adapter<History_adapter.Histor
             holder.pendingStatus.setVisibility(View.GONE);
             holder.pendingStatusLabel.setVisibility(View.GONE);
         }
-        holder.approvedTime.setText(request.getHRApprovedTime() != null ? request.getHRApprovedTime() : "N/A");
 
+        holder.HR_approver_name.setText(request.getHR_approver_name()!= null ? request.getHR_approver_name(): "N/A");
+        holder.HRApprovedTime.setText(request.getHRApprovedTime() != null ? request.getHRApprovedTime() : "N/A");
         holder.FH_approver_name_textview.setText(request.getApprovedFHName() != null ? request.getApprovedFHName() : "N/A");
         holder.FH_approved_time_textview.setText(request.getFH_Approved_Time() != null ? request.getFH_Approved_Time() : "N/A");
         holder.FH_approver_email_textview.setText(request.getApprovedFHEmail() != null ? request.getApprovedFHEmail(): "N/A");
@@ -91,7 +87,6 @@ public class History_adapter extends RecyclerView.Adapter<History_adapter.Histor
                 holder.drop_down_button.setImageResource(R.drawable.baseline_arrow_drop_up_24); // Use expand icon
             }
         });
-
     }
 
     @Override
@@ -104,9 +99,8 @@ public class History_adapter extends RecyclerView.Adapter<History_adapter.Histor
         TextView nameTextView, empIdTextView, empEmailTextView, pickupTextView,
                 dropoffTextView, dateTextView, timeTextView,
                 purposeTextView, FH_approver_name_textview,
-                FH_approver_email_textview,FH_approved_time_textview,
-                statusTextView, pendingStatus, pendingStatusLabel,approvedTime;
-        //View approveChip; // Change from Chip to View for hiding
+                FH_approver_email_textview, FH_approved_time_textview,
+                statusTextView, pendingStatus, pendingStatusLabel, HR_approver_name,HRApprovedTime;
         ImageButton drop_down_button;
         LinearLayout detailsLayout;
 
@@ -127,33 +121,39 @@ public class History_adapter extends RecyclerView.Adapter<History_adapter.Histor
             statusTextView = itemView.findViewById(R.id.status_textview);
             pendingStatusLabel = itemView.findViewById(R.id.pending_label);
             pendingStatus = itemView.findViewById(R.id.pending_status_textview);
-            approvedTime = itemView.findViewById(R.id.approved_time_textview);
+            HR_approver_name = itemView.findViewById(R.id.HR_approver_name_textview);
+            HRApprovedTime = itemView.findViewById(R.id.approved_time_textview);
             drop_down_button =  itemView.findViewById(R.id.drop_down_button);
             detailsLayout = itemView.findViewById(R.id.details_layout_history);
         }
     }
+
     private void sortRequestsByApprovedTime() {
         if (approvedRequestList != null && !approvedRequestList.isEmpty()) {
             SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
 
-            Collections.sort(approvedRequestList, new Comparator<RequestModel>() {
-                @Override
-                public int compare(RequestModel r1, RequestModel r2) {
-                    try {
-                        Date date1 = dateTimeFormat.parse(r1.getHRApprovedTime());
-                        Date date2 = dateTimeFormat.parse(r2.getHRApprovedTime());
-
-                        // Compare in descending order (latest first)
-                        return date2.compareTo(date1);
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                        return 0; // If parsing fails, keep the original order
+            approvedRequestList.sort((r1, r2) -> {
+                try {
+                    Date date1,date2;
+                    if(r1.getHRApprovedTime()!=null && r2.getHRApprovedTime()!=null)
+                    {
+                        date1 = dateTimeFormat.parse(r1.getHRApprovedTime());
+                        date2 = dateTimeFormat.parse(r2.getHRApprovedTime());
                     }
+                    else
+                    {
+                        date1 = dateTimeFormat.parse(r1.getFH_Approved_Time());
+                        date2 = dateTimeFormat.parse(r2.getFH_Approved_Time());
+                    }
+                    // Compare in descending order (latest first)
+                    return date2.compareTo(date1);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    return 0; // If parsing fails, keep the original order
                 }
             });
         }
     }
-
 
     public void updateList(List<RequestModel> newList) {
         if (newList == null) return;
@@ -162,6 +162,4 @@ public class History_adapter extends RecyclerView.Adapter<History_adapter.Histor
         sortRequestsByApprovedTime();  // Sort before notifying
         notifyDataSetChanged();        // Refresh RecyclerView
     }
-
-
 }

@@ -16,6 +16,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class Home_page extends AppCompatActivity {
@@ -47,9 +48,10 @@ public class Home_page extends AppCompatActivity {
         emp_id_layout =  findViewById(R.id.emp_id_layout);
         team_Layout =  findViewById(R.id.team_Layout);
         // Initialize buttons
-        ImageButton request_ride = findViewById(R.id.request_ride);
-        ImageButton pending_approvals = findViewById(R.id.pending_approvals);
-        ImageButton cab_request = findViewById(R.id.cab_request);
+
+        CardView request_ride = findViewById(R.id.request_ride_card);
+        CardView pending_approvals = findViewById(R.id.pending_approvals_card);
+        CardView cab_request = findViewById(R.id.cab_request_card);
 
         // Ensure user_role is assigned before checking visibility
         updateButtonVisibility(user_role, request_ride,pending_approvals, cab_request, emp_id_layout, team_Layout);
@@ -61,7 +63,7 @@ public class Home_page extends AppCompatActivity {
                 .getReference("Vendor_details");
 
 
-        View[] blurView = {emp_name_layout, emp_id_layout, team_Layout};
+        View[] blurView = {emp_name_layout, emp_id_layout, team_Layout, request_ride,pending_approvals,cab_request};
 
         for (View v : blurView) {
             v.setLayerType(View.LAYER_TYPE_SOFTWARE, null); // Enable software rendering
@@ -129,7 +131,7 @@ public class Home_page extends AppCompatActivity {
     }
 
 
-    private void updateButtonVisibility(String userRole, ImageButton request_ride,ImageButton pending_approvals, ImageButton cab_request, LinearLayout emp_id_layout, LinearLayout team_Layout) {
+    private void updateButtonVisibility(String userRole, CardView request_ride,CardView pending_approvals, CardView cab_request, LinearLayout emp_id_layout, LinearLayout team_Layout) {
         if (userRole == null) return; // Prevent null exceptions
 
         // Handle visibility based on user role

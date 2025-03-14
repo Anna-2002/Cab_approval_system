@@ -114,7 +114,7 @@ public class DepartmentHistoryFragment extends Fragment {
                 });
     }
 
-    private void fetchApprovedRequests(List<String> teamEmails, String deptHeadEmail,boolean isHR) {
+    private void fetchApprovedRequests(List<String> teamEmails, String deptHeadEmail, boolean isHR) {
         Log.d("DepartmentHistory", "isHR: " + isHR + ", DeptHeadEmail: " + deptHeadEmail);
         DatabaseReference approvedRequestsRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
                 .getReference("Approved_requests");
@@ -127,13 +127,15 @@ public class DepartmentHistoryFragment extends Fragment {
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     String requesterEmail = dataSnapshot.child("Emp_email").getValue(String.class);
 
-                    // Exclude department head's requests
-                    if (requesterEmail != null && teamEmails.contains(requesterEmail)) {
-                        if (isHR || !requesterEmail.equals(deptHeadEmail)) {
-                            RequestModel request = dataSnapshot.getValue(RequestModel.class);
-                            if (request != null) {
-                                departmentRequestList.add(request);
-                                adapter.updateList(departmentRequestList);
+                    if (requesterEmail != null) {
+                        if (teamEmails.contains(requesterEmail)) {
+                            // Include FH's requests if the requester is HR
+                            if (isHR || (deptHeadEmail == null || !requesterEmail.equals(deptHeadEmail))) {
+                                RequestModel request = dataSnapshot.getValue(RequestModel.class);
+                                if (request != null) {
+                                    departmentRequestList.add(request);
+                                    adapter.updateList(departmentRequestList);
+                                }
                             }
                         }
                     }
@@ -149,6 +151,7 @@ public class DepartmentHistoryFragment extends Fragment {
             }
         });
     }
+
 
 
 }

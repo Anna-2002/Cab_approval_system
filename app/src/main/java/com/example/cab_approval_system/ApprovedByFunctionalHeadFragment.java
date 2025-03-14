@@ -49,7 +49,7 @@ public class ApprovedByFunctionalHeadFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_personal_history, container, false);
+        View view = inflater.inflate(R.layout.fragment_department_history, container, false);
 
         RecyclerView recyclerView = view.findViewById(R.id.activity_history_adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

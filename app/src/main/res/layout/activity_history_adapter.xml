@@ -352,16 +352,43 @@
                 android:hint="Enter FH approver email ID"
                 android:textSize="12sp" />
         </LinearLayout>
-
-        <!-- Status -->
-
+        <!-- HR approver name -->
         <LinearLayout
             android:id="@+id/layout12"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@id/layout13"
+            app:layout_constraintTop_toBottomOf="@id/layout12">
+
+            <TextView
+                android:layout_width="95dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="HR Approver Name:"
+                android:textColor="@color/text_color"
+                android:textSize="12sp"
+                android:textStyle="normal" />
+
+            <TextView
+                android:id="@+id/HR_approver_name_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="8dp"
+                android:hint="Enter HR approver email ID"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Status -->
+
+        <LinearLayout
+            android:id="@+id/layout13"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
             app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/layout11">
+            app:layout_constraintTop_toBottomOf="@id/layout12">
 
             <TextView
                 android:layout_width="95dp"
@@ -385,12 +412,12 @@
         <!-- Status -->
 
         <LinearLayout
-            android:id="@+id/layout13"
+            android:id="@+id/layout14"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/layout12">
+            app:layout_constraintTop_toBottomOf="@id/layout13">
 
             <TextView
                 android:id="@+id/pending_label"
@@ -413,12 +440,12 @@
 
         </LinearLayout>
         <LinearLayout
-            android:id="@+id/layout14"
+            android:id="@+id/layout15"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/layout13">
+            app:layout_constraintTop_toBottomOf="@id/layout14">
 
             <TextView
                 android:layout_width="95dp"
