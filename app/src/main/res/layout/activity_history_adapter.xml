@@ -6,7 +6,8 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="@android:color/white">
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/rounded_button">
 
     <LinearLayout
         android:id="@+id/history_layout"
@@ -44,7 +45,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/baseline_arrow_drop_down_24"
         android:visibility="visible"
-        android:background="@color/semi_transparent_white"
+        android:background="#E7EAEDEC"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toRightOf="@id/history_layout"
@@ -376,7 +377,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="2dp"
                 android:layout_marginTop="8dp"
-                android:hint="Enter HR approver email ID"
+                android:hint="Enter HR approver name"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -435,7 +436,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="2dp"
                 android:layout_marginTop="8dp"
-                android:hint="HR Approval pending"
+                android:hint="FH Approval Pending"
                 android:textSize="12sp" />
 
         </LinearLayout>
@@ -448,6 +449,7 @@
             app:layout_constraintTop_toBottomOf="@id/layout14">
 
             <TextView
+                android:id="@+id/approved_time_label"
                 android:layout_width="95dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"

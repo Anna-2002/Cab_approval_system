@@ -54,21 +54,39 @@
                         android:background="@drawable/edittext_bkg"
                         android:elevation="10dp"/>
 
-                    <EditText
+                    <LinearLayout
                         android:layout_width="300dp"
                         android:layout_height="60dp"
                         android:layout_gravity="center"
-                        android:id="@+id/login_password"
                         android:layout_marginTop="20dp"
-                        android:padding="8dp"
-                        android:hint="Password"
-                        android:inputType="textPassword"
-                        android:textColor="@color/text_color"
-                        android:textColorHint="@color/hint_color"
-                        android:drawableLeft="@drawable/baseline_lock_24"
-                        android:drawablePadding="8dp"
-                        android:elevation="10dp"
-                        android:background="@drawable/edittext_bkg"/>
+                        android:background="@drawable/edittext_bkg"
+                        android:orientation="horizontal"
+                        android:elevation="10dp">
+
+                        <EditText
+                            android:id="@+id/login_password"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+
+                            android:hint="Password"
+                            android:inputType="textPassword"
+                            android:textColor="@color/text_color"
+                            android:textColorHint="@color/hint_color"
+                            android:drawableLeft="@drawable/baseline_lock_24"
+                            android:drawablePadding="8dp"
+                            android:background="@android:color/transparent"/>
+
+                        <ImageView
+                            android:id="@+id/password_toggle"
+                            android:layout_width="40dp"
+                            android:layout_height="60dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/closed_eye"
+                            tools:ignore="TouchTargetSizeCheck,SpeakableTextPresentCheck" />
+                    </LinearLayout>
 
                     <Button
                         android:id="@+id/login_button"

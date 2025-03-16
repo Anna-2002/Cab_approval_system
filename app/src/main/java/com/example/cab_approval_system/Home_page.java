@@ -21,7 +21,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class Home_page extends AppCompatActivity {
 
-    private TextView emp_Name, empID, empTeam;
+    private TextView emp_Name, empID, empTeam, request_ride_text,pending_approvals_text, cab_request_text;
     private DatabaseReference databaseReference, vendorReference;
     private static ImageView notificationDot; // Notification dot
     private String user_email, user_role;
@@ -47,6 +47,10 @@ public class Home_page extends AppCompatActivity {
         emp_name_layout = findViewById(R.id.emp_name_layout);
         emp_id_layout =  findViewById(R.id.emp_id_layout);
         team_Layout =  findViewById(R.id.team_Layout);
+        request_ride_text = findViewById(R.id.request_ride_text);
+        pending_approvals_text = findViewById(R.id.pending_approvals_text);
+        cab_request_text = findViewById(R.id.cab_request_text);
+
         // Initialize buttons
 
         CardView request_ride = findViewById(R.id.request_ride_card);
@@ -62,18 +66,6 @@ public class Home_page extends AppCompatActivity {
         vendorReference = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
                 .getReference("Vendor_details");
 
-
-        View[] blurView = {emp_name_layout, emp_id_layout, team_Layout, request_ride,pending_approvals,cab_request};
-
-        for (View v : blurView) {
-            v.setLayerType(View.LAYER_TYPE_SOFTWARE, null); // Enable software rendering
-
-            // Apply blur only to the background, not text
-            if (v.getBackground() != null) {
-                v.getBackground().mutate().setFilterBitmap(true);
-                v.getBackground().setAlpha(200);  // Optional: Adjust transparency for better effect
-            }
-        }
         // Fetch user data & notifications
         if (user_email != null) {
             fetchUserData(user_email);
@@ -137,14 +129,21 @@ public class Home_page extends AppCompatActivity {
         // Handle visibility based on user role
         if ("Employee".equals(userRole)) {
             pending_approvals.setVisibility(View.GONE);
+            pending_approvals_text.setVisibility(View.GONE);
             cab_request.setVisibility(View.GONE);
+            cab_request_text.setVisibility(View.GONE);
         } else if ("HR Head".equals(userRole) || "FH".equals(userRole)) {
             pending_approvals.setVisibility(View.VISIBLE);
+            pending_approvals_text.setVisibility(View.VISIBLE);
+            cab_request_text.setVisibility(View.GONE);
             cab_request.setVisibility(View.GONE);
         }else if("Vendor".equals(userRole)){
             request_ride.setVisibility(View.GONE);
+            request_ride_text.setVisibility(View.GONE);
             pending_approvals.setVisibility(View.GONE);
+            pending_approvals_text.setVisibility(View.GONE);
             cab_request.setVisibility(View.VISIBLE);
+            cab_request_text.setVisibility(View.VISIBLE);
             emp_id_layout.setVisibility(View.GONE);
             team_Layout.setVisibility(View.GONE);
 

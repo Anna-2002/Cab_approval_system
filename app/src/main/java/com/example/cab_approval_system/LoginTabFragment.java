@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.text.TextUtils;
+import android.text.method.PasswordTransformationMethod;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -42,6 +43,24 @@ public class LoginTabFragment extends Fragment {
         Button loginButton = view.findViewById(R.id.login_button);
         Button registrationButton = view.findViewById(R.id.registration_button);
         ImageView login_image = view.findViewById(R.id.login_image);
+        ImageView passwordToggle = view.findViewById(R.id.password_toggle);
+
+
+        // Initialize password visibility state
+        boolean[] isPasswordVisible = {false};  // Using an array since lambdas require effectively final variables
+
+        passwordField.setTransformationMethod(new PasswordTransformationMethod());
+        passwordToggle.setOnClickListener(v -> {  // Change 'view' to 'v'
+            if (isPasswordVisible[0]) {
+                passwordField.setTransformationMethod(new PasswordTransformationMethod()); // Hide password
+                passwordToggle.setImageResource(R.drawable.closed_eye);
+            } else {
+                passwordField.setTransformationMethod(null); // Show password
+                passwordToggle.setImageResource(R.drawable.opened_eye);
+            }
+            isPasswordVisible[0] = !isPasswordVisible[0];
+        });
+
 
 
         View[] blurView = {emailField, passwordField, loginButton, registrationButton, login_image};
@@ -52,7 +71,7 @@ public class LoginTabFragment extends Fragment {
             // Apply blur only to the background, not text
             if (v.getBackground() != null) {
                 v.getBackground().mutate().setFilterBitmap(true);
-                v.getBackground().setAlpha(200);  // Optional: Adjust transparency for better effect
+                v.getBackground().setAlpha(254);  // Optional: Adjust transparency for better effect
             }
         }
 

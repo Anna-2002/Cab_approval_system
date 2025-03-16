@@ -16,6 +16,10 @@
     <color name="link_color">#1E88E5</color>
     <color name="semi_transparent_white">#CCFFFFFF</color>
     <color name="main_color">#275F55</color>
+    <color name="semi_transparent_green">#275F5580</color>
+    <color name="bottom_nav_icon_color">#708090</color> <!-- Light gray -->
+    <color name="bottom_nav_text_color">#708090</color> <!-- Light gray -->
+    <color name="border_gray">#B0B0B0</color>  <!-- Gray border -->
     <color name="semi_transparent_color">#B2E9E4E4</color>
     <color name="red">#B2F80404</color>
     <!-- Dark Theme Colors -->

@@ -17,7 +17,8 @@ public class History_ViewPager extends FragmentStateAdapter {
 
     // List of all departments for HR view
     protected static final List<String> DEPARTMENTS = Arrays.asList(
-            "All requests",
+            "All Approved requests",
+            "All Rejected requests",
             "My Requests",
             "Mechanical Cable Systems",
             "Business Development",
@@ -44,26 +45,36 @@ public class History_ViewPager extends FragmentStateAdapter {
             // HR should see "All Approved Requests", "My Requests", and department-wise approved requests
             if (position == 0) {
                 return new AllApprovedRequestsFragment();  // New tab for all approved requests
-            } else if (position == 1) {
-                return PersonalHistoryFragment.newInstance(requesterEmail);  // New "My Requests" tab
+            } else if (position ==1)
+                return new AllRejectedRequestsFragment();
+            else if (position == 2) {
+                return PersonalHistoryFragment.newInstance(requesterEmail);  // "My Requests" tab
             } else {
-                return DepartmentHistoryFragment.newInstance(DEPARTMENTS.get(position),requesterEmail); // Shift index for department tabs
+                return DepartmentHistoryFragment.newInstance(DEPARTMENTS.get(position), requesterEmail); // Shift index for department tabs
             }
         } else if (isFH) {
-            // Functional Heads get three tabs:Personal, Dept and Awaiting HR approval
+            // Functional Heads get four tabs: Personal, Department, Awaiting HR approval, and Rejected Requests
             if (position == 0) {
                 return PersonalHistoryFragment.newInstance(requesterEmail);
             } else if (position == 1) {
                 return DepartmentHistoryFragment.newInstance(requesterTeam, requesterEmail);
+            } else if (position == 2) {
+                return ApprovedByFunctionalHeadFragment.newInstance(requesterEmail,requesterTeam);  // Partial Approvals tab
             } else {
-                return ApprovedByFunctionalHeadFragment.newInstance(requesterTeam);  // New Partial Approvals tab
+                return RejectedRequestsFragment.newInstance(requesterEmail,requesterTeam);
             }
         } else {
-            // Normal users get personal history + partial approvals
-            return (position==0) ? PersonalHistoryFragment.newInstance(requesterEmail)
-                    : ApprovedByFunctionalHeadFragment.newInstance(requesterTeam);
+            // Normal users get Personal History + Partial Approvals + Rejected Requests
+            if (position == 0) {
+                return PersonalHistoryFragment.newInstance(requesterEmail);
+            } else if (position == 1) {
+                return ApprovedByFunctionalHeadFragment.newInstance(requesterEmail, requesterTeam);
+            } else {
+                return RejectedRequestsFragment.newInstance(requesterEmail,requesterTeam);
+            }
         }
     }
+
 
 
     @Override
@@ -71,9 +82,9 @@ public class History_ViewPager extends FragmentStateAdapter {
         if (isHR) {
             return DEPARTMENTS.size(); // 8 tabs for HR
         } else if (isFH) {
-            return 3; // FH gets Personal + Department history + Partial approvals
+            return 4; // FH gets Personal + Department history + Partial approvals + Rejected
         } else {
-            return 2; // Others get Personal history + Partial approvals
+            return 3; // Others get Personal history + Partial approvals + Rejected
         }
     }
 }

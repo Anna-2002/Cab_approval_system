@@ -5,10 +5,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -56,10 +59,12 @@ public class DepartmentHistoryFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_department_history, container, false);
+        View view = inflater.inflate(R.layout.fragment_personal_history, container, false);
 
         RecyclerView recyclerView = view.findViewById(R.id.activity_history_adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        EditText searchBar = view.findViewById(R.id.search_bar);
 
         adapter = new History_adapter(getContext(), departmentRequestList);
         recyclerView.setAdapter(adapter);  // Set adapter first
@@ -67,8 +72,41 @@ public class DepartmentHistoryFragment extends Fragment {
 
         fetchData();
 
+        searchBar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterRequests(s.toString()); // Call filter function
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
         return view;
     }
+    private void filterRequests(String query) {
+        List<RequestModel> filteredList = new ArrayList<>();
+
+        if (query.isEmpty()) {
+            filteredList.addAll(departmentRequestList); // Restore full list when search is cleared
+        } else {
+            for (RequestModel request : departmentRequestList) {
+                if (request.getEmpName() != null && request.getEmpId() != null) {
+                    if (request.getEmpName().toLowerCase().contains(query.toLowerCase()) ||
+                            request.getEmpId().toLowerCase().contains(query.toLowerCase())) {
+                        filteredList.add(request);
+                    }
+                }
+            }
+        }
+
+        adapter.updateSearchList(filteredList); // Update RecyclerView
+    }
+
+
 
     private void fetchData() {
         DatabaseReference sheetRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
@@ -150,6 +188,7 @@ public class DepartmentHistoryFragment extends Fragment {
                 Log.e("FirebaseError", "Error fetching approved requests", error.toException());
             }
         });
+
     }
 
 

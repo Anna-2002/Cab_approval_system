@@ -45,6 +45,7 @@ Profile_page extends AppCompatActivity {
                 .getReference("Registration_data");
 
         fetchUserDetails();
+        fetchVendorDetails();
         // Initialize views
         passwordTextView = findViewById(R.id.employee_password_text);
         resetSaveButton = findViewById(R.id.reset_password_button);
@@ -176,6 +177,47 @@ Profile_page extends AppCompatActivity {
         emailTextView.setText(email);
         teamTextView.setText(team);
         mobileTextView.setText(mobile);
+    }
+    private void fetchVendorDetails() {
+        DatabaseReference vendorRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("Vendor_details");
+
+        // Fetch Vendor details
+        vendorRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult().exists()) {
+                for (DataSnapshot snapshot : task.getResult().getChildren()) {
+                    String phoneNumber = String.valueOf(snapshot.child("Phone_Number").getValue(Long.class));
+                    String designation = snapshot.child("designation").getValue(String.class);
+                    String email = snapshot.child("email_id").getValue(String.class);
+                    String empId = String.valueOf(snapshot.child("employeeId").getValue(Long.class));
+                    String name = snapshot.child("name").getValue(String.class);
+
+                    updateVendorUI(phoneNumber, designation, email, name);
+                    return; // Stop after fetching the first vendor (if needed)
+                }
+            } else {
+                Log.d("DEBUG", "Vendor not found in Vendor_details.");
+                Toast.makeText(Profile_page.this, "Vendor details not found", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // Function to update UI with vendor details
+    private void updateVendorUI(String phone, String designation, String email,String name) {
+
+        TextView empIdTextView = findViewById(R.id.employee_id_profile);
+        TextView nameTextView = findViewById(R.id.employee_name_profile);
+        TextView emailTextView = findViewById(R.id.employee_email_profile);
+        TextView designationTextView = findViewById(R.id.employee_team_label);
+        TextView teamTextView = findViewById(R.id.employee_team_profile);
+        TextView mobileTextView = findViewById(R.id.employee_mobile_profile);
+
+        empIdTextView.setText("0");
+        mobileTextView.setText(phone);
+        designationTextView.setText("Designation");
+        teamTextView.setText(designation);
+        emailTextView.setText(email);
+        nameTextView.setText(name);
     }
 
 

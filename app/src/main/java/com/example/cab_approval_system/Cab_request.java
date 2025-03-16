@@ -46,47 +46,48 @@ public class Cab_request extends AppCompatActivity {
     }
 
     private void fetchApprovedRequests() {
-        approvedRequestsRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                requestList.clear();
+        approvedRequestsRef.orderByChild("rideAssigned").equalTo(false)
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        requestList.clear();
 
-                for (DataSnapshot requestSnapshot : snapshot.getChildren()) {
-                    String requestId = requestSnapshot.getKey();
+                        for (DataSnapshot requestSnapshot : snapshot.getChildren()) {
+                            String requestId = requestSnapshot.getKey();
 
-                    if (requestId == null || requestId.isEmpty()) {
-                        continue;
+                            if (requestId == null || requestId.isEmpty()) {
+                                continue;
+                            }
+
+                            String empName = requestSnapshot.child("Emp_name").getValue(String.class);
+                            String empEmail = requestSnapshot.child("Emp_email").getValue(String.class);
+                            String source = requestSnapshot.child("Source").getValue(String.class);
+                            String destination = requestSnapshot.child("Destination").getValue(String.class);
+                            String rideDate = requestSnapshot.child("Date").getValue(String.class);
+                            String rideTime = requestSnapshot.child("Time").getValue(String.class);
+                            String numberOfPassengers = requestSnapshot.child("no_of_passengers").getValue(String.class);
+
+                            if (empName == null) empName = "N/A";
+                            if (empEmail == null) empEmail = "N/A";
+                            if (source == null) source = "Unknown";
+                            if (destination == null) destination = "Unknown";
+                            if (rideDate == null) rideDate = "Not Set";
+                            if (rideTime == null) rideTime = "Not Set";
+                            if (numberOfPassengers == null) numberOfPassengers = "1"; // Default to 1
+
+
+                            if (empName != null && empEmail != null) {
+                                fetchMobileNumber(requestId, empName, empEmail, source, destination, rideDate, rideTime, numberOfPassengers);
+                            }
+
+                        }
                     }
 
-                    String empName = requestSnapshot.child("Emp_name").getValue(String.class);
-                    String empEmail = requestSnapshot.child("Emp_email").getValue(String.class);
-                    String source = requestSnapshot.child("Source").getValue(String.class);
-                    String destination = requestSnapshot.child("Destination").getValue(String.class);
-                    String rideDate = requestSnapshot.child("Date").getValue(String.class);
-                    String rideTime = requestSnapshot.child("Time").getValue(String.class);
-                    String numberOfPassengers = requestSnapshot.child("no_of_passengers").getValue(String.class);
-
-                    if (empName == null) empName = "N/A";
-                    if (empEmail == null) empEmail = "N/A";
-                    if (source == null) source = "Unknown";
-                    if (destination == null) destination = "Unknown";
-                    if (rideDate == null) rideDate = "Not Set";
-                    if (rideTime == null) rideTime = "Not Set";
-                    if (numberOfPassengers == null) numberOfPassengers = "1"; // Default to 1
-
-
-                    if (empName != null && empEmail != null) {
-                            fetchMobileNumber(requestId, empName, empEmail, source, destination, rideDate, rideTime, numberOfPassengers);
-                        }
-
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(Cab_request.this, "Failed to fetch requests: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(Cab_request.this, "Failed to fetch requests: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void fetchMobileNumber(String requestId, String empName, String empEmail, String source, String destination, String rideDate, String rideTime, String numberOfPassengers) {

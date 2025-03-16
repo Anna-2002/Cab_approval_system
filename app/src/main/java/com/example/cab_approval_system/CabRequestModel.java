@@ -14,6 +14,7 @@ public class CabRequestModel {
     private String driverMobile;
     private String cabNumber;
 
+
     // Default constructor required for Firebase
     public CabRequestModel() {}
 
@@ -60,4 +61,5 @@ public class CabRequestModel {
     public void setDriverMobile(String driverMobile) { this.driverMobile = driverMobile; }
     public String getCabNumber() { return cabNumber; }
     public void setCabNumber(String cabNumber) { this.cabNumber = cabNumber; }
+
 }

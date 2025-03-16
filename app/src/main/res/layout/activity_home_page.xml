@@ -4,74 +4,73 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background_color"
     tools:context=".Home_page">
 
 
     <include
         android:id="@+id/include"
         layout="@layout/header"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintStart_toStartOf="@id/guideline_left"
+        app:layout_constraintEnd_toEndOf="@id/guideline_right"
+        app:layout_constraintTop_toTopOf="@+id/guideline_top"/>
 
     <LinearLayout
-        android:id="@+id/emp_name_layout"
+        android:id="@+id/main_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/edittext_bkg"
-        android:orientation="horizontal"
-        android:padding="15dp"
-        android:elevation="2dp"
+        android:orientation="vertical"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/rounded_button"
         app:layout_constraintStart_toStartOf="@id/guideline_left"
         app:layout_constraintEnd_toEndOf="@id/guideline_right"
         app:layout_constraintTop_toBottomOf="@+id/include">
 
-        <!-- Welcome Text -->
-        <TextView
-            android:id="@+id/emp_name_welcome"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/emp_name_layout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingEnd="8dp"
-            android:text="@string/welcome"
-            android:textColor="@android:color/black"
-            android:textSize="26sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:padding="15dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Employee Name Text -->
-        <TextView
-            android:id="@+id/emp_name_fetch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingEnd="8dp"
-            android:hint="@string/emp_name"
-            android:textColor="@color/text_color"
-            android:textSize="26sp"
-            android:textStyle="italic" />
+            <!-- Welcome Text -->
+            <TextView
+                android:id="@+id/emp_name_welcome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingEnd="8dp"
+                android:text="@string/welcome"
+                android:fontFamily="@font/roboto_regular"
+                android:textColor="@android:color/black"
+                android:textSize="26sp" />
 
-        <!-- Comma (,) Text -->
-        <TextView
-            android:id="@+id/emp_name_comma"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/comma"
-            android:textColor="@android:color/black"
-            android:textSize="26sp"
-            android:textStyle="italic" />
-    </LinearLayout>
+            <!-- Employee Name Text -->
+            <TextView
+                android:id="@+id/emp_name_fetch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingEnd="8dp"
+                android:fontFamily="@font/roboto_bold"
+                android:hint="@string/emp_name"
+                android:textColor="@color/text_color"
+                android:textSize="26sp"
+                android:textStyle="bold" />
 
+        </LinearLayout>
 
     <!-- Emp ID -->
     <LinearLayout
         android:id="@+id/emp_id_layout"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:elevation="2dp"
         android:padding="10dp"
-        android:background="@drawable/edittext_bkg"
         android:orientation="vertical"
-        android:layout_marginTop="35dp"
-        app:layout_constraintStart_toStartOf="@id/guideline_left"
-        app:layout_constraintEnd_toEndOf="@id/guideline_right"
+        android:layout_marginTop="1dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/emp_name_layout">
 
         <!-- TextView for label -->
@@ -80,10 +79,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="8dp"
-            android:elevation="10dp"
-            android:text="@string/emp_id"
-            android:textColor="@android:color/black"
-            android:textSize="16sp" />
+            android:fontFamily="@font/roboto_regular"
+            android:text="Employee ID"
+            android:textColor="@color/text_color"
+            android:textSize="14sp" />
 
         <!-- TextView for input -->
         <TextView
@@ -91,11 +90,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            android:elevation="10dp"
+            android:background="@drawable/home_page_edittext_background"
             android:hint="@string/emp_id"
+            android:textColor="@color/text_color"
+            android:fontFamily="@font/roboto_medium"
             android:inputType="number"
             android:padding="8dp"
-            android:textSize="16sp"
+            android:textSize="18sp"
             tools:ignore="TouchTargetSizeCheck" />
 
     </LinearLayout>
@@ -103,13 +104,11 @@
     <!-- Emp team -->
     <LinearLayout
         android:id="@+id/team_Layout"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:elevation="2dp"
-        android:background="@drawable/edittext_bkg"
         android:orientation="vertical"
         android:padding="10dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="1dp"
         app:layout_constraintStart_toStartOf="@id/guideline_left"
         app:layout_constraintEnd_toEndOf="@id/guideline_right"
         app:layout_constraintTop_toBottomOf="@+id/emp_id_layout">
@@ -120,10 +119,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="8dp"
-            android:elevation="10dp"
-            android:text="@string/emp_team"
+            android:fontFamily="@font/roboto_regular"
+            android:text="Team"
             android:textColor="@android:color/black"
-            android:textSize="16sp" />
+            android:textSize="14sp" />
 
         <!-- TextView for input -->
         <TextView
@@ -132,13 +131,16 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
             android:hint="@string/emp_team"
+            android:textColor="@color/text_color"
             android:inputType="text"
-            android:elevation="10dp"
+            android:fontFamily="@font/roboto_medium"
+            android:background="@drawable/home_page_edittext_background"
             android:padding="8dp"
-            android:textSize="16sp"
+            android:textSize="18sp"
             tools:ignore="TouchTargetSizeCheck" />
 
     </LinearLayout>
+</LinearLayout>
 
 
     <HorizontalScrollView
@@ -151,7 +153,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/team_Layout"
+        app:layout_constraintTop_toBottomOf="@+id/main_layout"
         app:layout_constraintVertical_bias="0.5">
 
         <LinearLayout
@@ -160,88 +162,153 @@
             android:padding="8dp"
             android:orientation="horizontal">
 
-            <!-- Request Ride Card -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/request_ride_card"
-                android:layout_width="150dp"
-                android:layout_height="120dp"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="8dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                android:background="@color/semi_transparent_white">
-
-                <ImageView
-                    android:id="@+id/request_ride"
-                    android:layout_width="150dp"
-                    android:layout_height="120dp"
-                    android:layout_marginEnd="16dp"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="@string/requesting_ride"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/request_ride_icon" />
-            </androidx.cardview.widget.CardView>
-
-            <!-- Pending Approvals Card -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/pending_approvals_card"
-                android:layout_width="150dp"
-                android:layout_height="120dp"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="8dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                android:background="@color/semi_transparent_white">
-            <FrameLayout
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_margin="8dp">
 
-                <ImageView
-                    android:id="@+id/pending_approvals"
+                <!-- CardView with only Image -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/request_ride_card"
                     android:layout_width="150dp"
                     android:layout_height="120dp"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="@string/pending_approvals"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/pending_request_icon" />
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:background="@color/semi_transparent_white">
 
-                <ImageView
-                    android:id="@+id/notification_dot"
+                    <ImageView
+                        android:id="@+id/request_ride"
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:scaleType="fitCenter"
+                        android:adjustViewBounds="true"
+                        android:contentDescription="@string/requesting_ride"
+                        android:src="@drawable/request_ride_icon_sample" />
+                </androidx.cardview.widget.CardView>
+
+                <!-- Text Outside the CardView -->
+                <TextView
+                    android:id="@+id/request_ride_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="end|top"
-                    android:background="@drawable/ic_notification"
-                    android:visibility="visible" />
-            </FrameLayout>
-            </androidx.cardview.widget.CardView>
+                    android:layout_marginTop="4dp"
+                    android:text="Ride Request"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/main_color"
+                    android:gravity="center" />
+            </LinearLayout>
 
 
-            <!-- Third Image Button -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cab_request_card"
-                android:layout_width="150dp"
-                android:layout_height="120dp"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="8dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                android:background="@color/semi_transparent_white">
-                <ImageView
-                    android:id="@+id/cab_request"
+
+            <!-- Pending Approvals Card -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_margin="8dp">
+
+                <!-- CardView with Image and Notification Dot -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/pending_approvals_card"
                     android:layout_width="150dp"
                     android:layout_height="120dp"
-                    android:layout_marginStart="16dp"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="@string/sending_cab_details_as_per_requested"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/cab_request_icon" />
-            </androidx.cardview.widget.CardView>
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:background="@color/semi_transparent_white">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <!-- Main Image -->
+                        <ImageView
+                            android:id="@+id/pending_approvals"
+                            android:layout_width="match_parent"
+                            android:layout_height="100dp"
+                            android:scaleType="fitCenter"
+                            android:background="@android:color/transparent"
+                            android:contentDescription="@string/pending_approvals"
+                            android:src="@drawable/pending_approval_icon" />
+
+                        <!-- Notification Dot -->
+                        <ImageView
+                            android:id="@+id/notification_dot"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_gravity="end|top"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginTop="8dp"
+                            android:src="@drawable/ic_notification"
+                            android:visibility="visible" />
+                    </FrameLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- TextView for Label -->
+                <TextView
+                    android:id="@+id/pending_approvals_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Pending Request"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/main_color"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <!-- Third Image Button -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_margin="8dp">
+
+                <!-- Cab Request Card -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cab_request_card"
+                    android:layout_width="150dp"
+                    android:layout_height="120dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:background="@color/semi_transparent_white">
+
+                    <ImageView
+                        android:id="@+id/cab_request"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="fitCenter"
+                        android:background="@android:color/transparent"
+                        android:contentDescription="@string/sending_cab_details_as_per_requested"
+                        android:src="@drawable/cab_request_icon_sample" />
+                </androidx.cardview.widget.CardView>
+
+                <!-- TextView for Label -->
+                <TextView
+                    android:id="@+id/cab_request_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Cab Request"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/main_color"
+                    android:gravity="center" />
+            </LinearLayout>
+
         </LinearLayout>
 
     </HorizontalScrollView>

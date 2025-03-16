@@ -102,16 +102,35 @@ public class CabRequestAdapter extends RecyclerView.Adapter<CabRequestAdapter.Vi
 
         // Send button logic (store in Assigned_rides)
         holder.sendButton.setOnClickListener(v -> {
-            DatabaseReference assignedRideRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
-                    .getReference("Assigned_rides");
-
-            String requestId = request.getRequestId();
-
-            assignedRideRef.child(requestId).setValue(request)
-                    .addOnSuccessListener(aVoid -> Toast.makeText(context, "Ride Assigned Successfully", Toast.LENGTH_SHORT).show())
-                    .addOnFailureListener(e -> Toast.makeText(context, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+            assignRideToVendor(request);
+            holder.driverDetailsLayout.setVisibility(View.GONE);
+            holder.driver_details_title.setVisibility(View.GONE);
         });
+
     }
+
+    private void assignRideToVendor(CabRequestModel request) {
+        DatabaseReference assignedRideRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("Assigned_rides");
+
+        DatabaseReference approvedRequestsRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("Approved_requests");
+
+        String requestId = request.getRequestId();
+
+        assignedRideRef.child(requestId).setValue(request)
+                .addOnSuccessListener(aVoid -> {
+                    // After successfully saving in Assigned_rides, update rideAssigned in Approved_requests
+                    approvedRequestsRef.child(requestId).child("rideAssigned").setValue(true)
+                            .addOnSuccessListener(aVoid1 ->
+                                    Toast.makeText(context, "Ride Assigned Successfully", Toast.LENGTH_SHORT).show())
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(context, "Failed to update Approved_requests: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(context, "Failed to assign ride: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
 
     @Override
     public int getItemCount() {

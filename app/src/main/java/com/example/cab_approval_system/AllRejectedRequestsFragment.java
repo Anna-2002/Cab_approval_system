@@ -25,24 +25,24 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AllApprovedRequestsFragment extends Fragment {
+public class AllRejectedRequestsFragment extends Fragment {
 
     private RecyclerView recyclerView;
-    private History_adapter adapter;
-    private List<RequestModel> approvedRequestList = new ArrayList<>();
+    private Rejected_history_adapter adapter;
+    private List<RequestModel> rejectedRequestList = new ArrayList<>();
     private DatabaseReference databaseReference;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_personal_history, container, false);
+        View view = inflater.inflate(R.layout.activity_rejected_requests_fragment, container, false);
 
         EditText searchBar = view.findViewById(R.id.search_bar);
 
-        recyclerView = view.findViewById(R.id.activity_history_adapter);
+        recyclerView = view.findViewById(R.id.item_rejected_requests);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        adapter = new History_adapter(getContext(), approvedRequestList);
+        adapter = new Rejected_history_adapter(getContext(), rejectedRequestList);
         recyclerView.setAdapter(adapter);
 
         fetchData();
@@ -63,61 +63,53 @@ public class AllApprovedRequestsFragment extends Fragment {
         return view;
     }
     private void filterRequests(String query) {
-        new Thread(() -> {
+        new Thread(() -> { // Run filtering in the background
             List<RequestModel> filteredList = new ArrayList<>();
-            String lowerCaseQuery = query.toLowerCase().trim();
+            String lowerCaseQuery = query.toLowerCase().trim(); // Precompute
 
             if (lowerCaseQuery.isEmpty()) {
-                // Restore full list WITHOUT modifying `approvedRequestList`
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    adapter.updateSearchList(approvedRequestList);
-                });
-                return;
-            }
+                filteredList.addAll(rejectedRequestList); // Restore full list if query is empty
+            } else {
+                for (RequestModel request : rejectedRequestList) {
+                    if (request.getEmpName() != null && request.getEmpId() != null) {
+                        String empNameLower = request.getEmpName().toLowerCase();
+                        String empIdLower = request.getEmpId().toLowerCase();
 
-            // Filter without modifying original list
-            for (RequestModel request : approvedRequestList) {
-                if (request.getEmpName() != null && request.getEmpId() != null) {
-                    String empNameLower = request.getEmpName().toLowerCase();
-                    String empIdLower = request.getEmpId().toLowerCase();
-
-                    if (empNameLower.contains(lowerCaseQuery) || empIdLower.contains(lowerCaseQuery)) {
-                        filteredList.add(request);
+                        if (empNameLower.contains(lowerCaseQuery) || empIdLower.contains(lowerCaseQuery)) {
+                            filteredList.add(request);
+                        }
                     }
                 }
             }
 
-            // Update UI with filtered list
+            // Update UI on the main thread
             new Handler(Looper.getMainLooper()).post(() -> adapter.updateSearchList(filteredList));
         }).start();
     }
 
 
 
-
-
-
     private void fetchData() {
         databaseReference = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
-                .getReference("Approved_requests");
+                .getReference("Rejected_requests");
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                approvedRequestList.clear();
-                Log.d("AllApprovedRequests", "Total Requests Found: " + snapshot.getChildrenCount());
+                rejectedRequestList.clear();
+                Log.d("AllRejectedRequests", "Total Requests Found: " + snapshot.getChildrenCount());
 
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     RequestModel request = dataSnapshot.getValue(RequestModel.class);
                     if (request != null) {
-                        approvedRequestList.add(request);
+                        rejectedRequestList.add(request);
                     } else {
-                        Log.e("AllApprovedRequests", "RequestModel is null for key: " + dataSnapshot.getKey());
+                        Log.e("AllRejectedRequests", "RequestModel is null for key: " + dataSnapshot.getKey());
                     }
                 }
-                //desc order
-                approvedRequestList.sort((r1, r2) -> Integer.compare(Integer.parseInt(r2.getRequestId()), Integer.parseInt(r1.getRequestId())));
-                Log.d("AllApprovedRequests", "Final List Size: " + approvedRequestList.size());
+                // Sort in descending order by requestId
+                rejectedRequestList.sort((r1, r2) -> Integer.compare(Integer.parseInt(r2.getRequestId()), Integer.parseInt(r1.getRequestId())));
+                Log.d("AllRejectedRequests", "Final List Size: " + rejectedRequestList.size());
 
                 adapter.notifyDataSetChanged();
             }

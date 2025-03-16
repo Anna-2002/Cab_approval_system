@@ -65,19 +65,19 @@
 
             <!-- Designation Spinner -->
 
-                <Spinner
-                    android:id="@+id/designation_spinner"
-                    android:layout_width="300dp"
-                    android:layout_height="60dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/edittext_bkg"
-                    android:elevation="10dp"
-                    android:layout_marginTop="20dp"
-                    android:drawablePadding="8dp"
-                    android:hint="Select"
-                    android:padding="8dp"
-                    android:textColor="@color/text_color"
-                    android:textColorHint="@color/hint_color" />
+            <Spinner
+                android:id="@+id/designation_spinner"
+                android:layout_width="300dp"
+                android:layout_height="60dp"
+                android:layout_gravity="center"
+                android:background="@drawable/edittext_bkg"
+                android:elevation="10dp"
+                android:layout_marginTop="20dp"
+                android:drawablePadding="8dp"
+                android:hint="Select"
+                android:padding="8dp"
+                android:textColor="@color/text_color"
+                android:textColorHint="@color/hint_color" />
 
             <EditText
                 android:id="@+id/signup_emp_id"
@@ -97,41 +97,79 @@
 
 
 
-            <!-- Password Field -->
-            <EditText
-                android:id="@+id/signup_password"
+            <!-- Password Field with Visibility Toggle -->
+            <LinearLayout
                 android:layout_width="300dp"
                 android:layout_height="60dp"
                 android:layout_gravity="center"
+                android:elevation="10dp"
                 android:layout_marginTop="20dp"
                 android:background="@drawable/edittext_bkg"
-                android:drawableLeft="@drawable/baseline_lock_24"
-                android:drawablePadding="8dp"
-                android:hint="Password"
-                android:elevation="10dp"
-                android:maxLength="15"
-                android:inputType="textPassword"
-                android:padding="8dp"
-                android:textColor="@color/text_color"
-                android:textColorHint="@color/hint_color" />
+                android:orientation="horizontal">
 
-            <!-- Confirm Password Field -->
-            <EditText
-                android:id="@+id/signup_confirm"
+                <EditText
+                    android:id="@+id/signup_password"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:drawableLeft="@drawable/baseline_lock_24"
+                    android:drawablePadding="8dp"
+                    android:hint="Password"
+                    android:maxLength="15"
+                    android:inputType="textPassword"
+                    android:padding="8dp"
+                    android:textColor="@color/text_color"
+                    android:textColorHint="@color/hint_color" />
+
+                <ImageView
+                    android:id="@+id/password_toggle"
+                    android:layout_width="40dp"
+                    android:layout_height="60dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/closed_eye"
+                    tools:ignore="TouchTargetSizeCheck,SpeakableTextPresentCheck" />
+            </LinearLayout>
+
+
+            <LinearLayout
                 android:layout_width="300dp"
                 android:layout_height="60dp"
                 android:layout_gravity="center"
-                android:layout_marginTop="20dp"
                 android:elevation="10dp"
-                android:maxLength="15"
+                android:layout_marginTop="20dp"
                 android:background="@drawable/edittext_bkg"
-                android:drawableLeft="@drawable/baseline_password_24"
-                android:drawablePadding="8dp"
-                android:hint="Confirm Password"
-                android:inputType="textPassword"
-                android:padding="8dp"
-                android:textColor="@color/text_color"
-                android:textColorHint="@color/hint_color" />
+                android:orientation="horizontal">
+
+                <!-- Confirm Password Field -->
+                <EditText
+                    android:id="@+id/signup_confirm"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:drawableLeft="@drawable/baseline_password_24"
+                    android:drawablePadding="8dp"
+                    android:hint="Confirm Password"
+                    android:inputType="textPassword"
+                    android:maxLength="15"
+                    android:padding="8dp"
+                    android:textColor="@color/text_color"
+                    android:textColorHint="@color/hint_color" />
+
+                <!-- Confirm Password Visibility Toggle -->
+                <ImageView
+                    android:id="@+id/confirm_password_toggle"
+                    android:layout_width="40dp"
+                    android:layout_height="60dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/closed_eye"
+                    tools:ignore="TouchTargetSizeCheck,SpeakableTextPresentCheck" />
+            </LinearLayout>
 
             <!-- Signup Button -->
             <Button

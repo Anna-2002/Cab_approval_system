@@ -256,6 +256,8 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
                                                                 // FH → HR Direct Approval
                                                                 approvedData.put("HR_Approved_Time",request.getHRApprovedTime());
                                                                 approvedData.put("Status", "Ride approved successfully");
+                                                                approvedData.put("rideAssigned",false);
+                                                                request.setRideAssigned(false);
                                                                 approvedData.put("Approved_HR_name", finalApproverName);
                                                                 approvedData.put("Approved_HR_email", approverEmail);
                                                                 approvedData.put("approvedByFH", false);
@@ -272,6 +274,8 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
                                                                 approvedData.put("HR_Approved_Time",new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault()).format(new Date()));
                                                                 approvedData.put("Status", "Ride approved successfully");
                                                                 approvedData.put("approvedByFH", false);
+                                                                approvedData.put("rideAssigned",false);
+                                                                request.setRideAssigned(false);
                                                                 approvedData.put("Approved_FH_name", request.getApprovedFHName());
                                                                 approvedData.put("Approved_FH_email", request.getApprovedFHEmail());
                                                                 approvedData.put("Approved_HR_name", finalApproverName);

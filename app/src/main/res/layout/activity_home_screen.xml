@@ -12,8 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:background="@color/semi_transparent_white"
-        app:tabGravity="fill"
+        android:background="@color/background_color"
         android:padding="15dp"
         android:layout_gravity="bottom"
         app:tabMode="fixed"
@@ -26,149 +25,112 @@
         android:layout_height="0dp"
         android:layout_below="@id/home_tabLayout"
         android:layout_alignParentBottom="true"
-        app:layout_constraintBottom_toTopOf="@id/home_imageButtons" />
+        app:layout_constraintBottom_toTopOf="@id/home_cardView" />
 
     <!-- Image Buttons at the bottom of the screen -->
-    <LinearLayout
-        android:id="@+id/home_imageButtons"
+    <!-- Bottom Navigation CardView -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/home_cardView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/semi_transparent_white"
-        android:orientation="horizontal"
-        android:gravity="center"
+        android:layout_height="70dp"
         android:layout_gravity="bottom"
-        android:layout_alignParentBottom="true">
+        app:cardElevation="5dp"
+        app:cardCornerRadius="20dp"
+        android:background="@android:color/white"
+        app:cardBackgroundColor="@android:color/white"
+        android:layout_margin="10dp">
 
-        <!-- Home Image Button -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/home_cardview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="8dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
-            android:background="@color/semi_transparent_white">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:weightSum="3">
 
+            <!-- Home Button -->
             <LinearLayout
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_margin="5dp"
-                android:background="@color/semi_transparent_white"
+                android:id="@+id/home_button"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_weight="1"
                 android:gravity="center"
-                android:orientation="vertical"
-                android:padding="5dp">
+                android:orientation="vertical">
 
-                <ImageButton
+                <ImageView
                     android:id="@+id/home_image_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@color/semi_transparent_white"
-                    android:contentDescription="@string/home"
-                    android:src="@drawable/ic_home_black_24dp"
-                    tools:ignore="TouchTargetSizeCheck" />
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/home_outline"
+                    app:tint="@color/bottom_nav_icon_color"/>
 
                 <TextView
                     android:id="@+id/home_btn_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="@string/Home"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
+                    android:text="Home"
+                    android:textSize="12sp"
+                    android:textColor="@color/bottom_nav_text_color"/>
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
 
-
-        <!-- History Image Button -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/history_cardview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="8dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
-            android:background="@color/semi_transparent_white">
-
+            <!-- History Button -->
             <LinearLayout
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:background="@color/semi_transparent_white"
-                android:orientation="vertical"
-                android:padding="5dp"
+                android:id="@+id/history_button"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_weight="1"
                 android:gravity="center"
-                android:layout_margin="5dp">
+                android:orientation="vertical">
 
-                <ImageButton
-                    android:id="@+id/history_image_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@color/semi_transparent_white"
-                    android:contentDescription="@string/History"
-                    android:src="@drawable/baseline_history_24"
-                    tools:ignore="TouchTargetSizeCheck" />
+                <ImageView
+                    android:id="@+id/history_image"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/history_outline"
+                    app:tint="@color/bottom_nav_icon_color"/>
 
                 <TextView
                     android:id="@+id/history_btn_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/History"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:gravity="center" />
-
+                    android:text="History"
+                    android:textSize="12sp"
+                    android:textColor="@color/bottom_nav_text_color"/>
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
 
-        <!-- Profile Image Button -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/profile_cardview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="8dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
-            android:background="@color/semi_transparent_white">
+            <!-- Profile Button -->
             <LinearLayout
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:orientation="vertical"
-                android:padding="5dp"
-                android:background="@color/semi_transparent_white"
+                android:id="@+id/profile_button"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_weight="1"
                 android:gravity="center"
-                android:layout_margin="5dp">
+                android:orientation="vertical">
 
-                <ImageButton
+                <ImageView
                     android:id="@+id/profile_image_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@color/semi_transparent_white"
-                    android:contentDescription="@string/Profile"
-                    android:src="@drawable/baseline_profile_24"
-                    tools:ignore="TouchTargetSizeCheck" />
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/profile_outline"
+                    app:tint="@color/bottom_nav_icon_color"/>
 
                 <TextView
                     android:id="@+id/profile_btn_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/Profile"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:gravity="center" />
-
+                    android:text="Profile"
+                    android:textSize="12sp"
+                    android:textColor="@color/bottom_nav_text_color"/>
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
-    </LinearLayout>
 
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

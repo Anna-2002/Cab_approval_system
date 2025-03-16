@@ -90,15 +90,18 @@ public class History_page extends AppCompatActivity {
                     tab.setText("Personal History");
                 } else if (position == 1) {
                     tab.setText("Approved Department Requests");
-                } else {
+                } else if(position==2)
                     tab.setText("Pending Approvals"); // Correct name for new tab
-                }
+                else
+                    tab.setText("Rejected Requests");
+
             } else {
                 if (position == 0) {
                     tab.setText("Approved Requests History");
-                } else {
+                } else if(position == 1)
                     tab.setText("Pending Approvals"); // Employees also have this tab
-                }
+                else
+                    tab.setText("Rejected Requests");
             }
         }).attach();
     }

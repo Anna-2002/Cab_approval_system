@@ -29,6 +29,9 @@ public class RequestModel {
     private String FH_Approved_Time;
     private String rejectionReason;
     private String HR_approver_name;
+    private String rejectedBy;
+
+    private Boolean rideAssigned;
 
     public RequestModel() {
         // Default constructor required for Firebase
@@ -152,15 +155,6 @@ public class RequestModel {
         }
     }
 
-    @PropertyName("Approver_name")
-    public String getApproverName() {
-        return approverName;
-    }
-
-    @PropertyName("Approver_name")
-    public void setApproverName(String approverName) {
-        this.approverName = approverName;
-    }
 
     @PropertyName("HR_Approved_Time")
     public String getHRApprovedTime() {
@@ -272,14 +266,32 @@ public class RequestModel {
         this.FH_Approved_Time = FH_Approved_Time;
     }
 
-    @PropertyName("Reason for Rejection")
+    @PropertyName("Reason")
     public  String getRejectionReason(){
         return rejectionReason;
     }
 
-    @PropertyName("Reason for Rejection")
+    @PropertyName("Reason")
     public void setRejectionReason(String rejectionReason){
         this.rejectionReason = rejectionReason;
+    }
+
+    @PropertyName("rideAssigned")
+    public Boolean getRideAssigned() { return rideAssigned; }
+
+    @PropertyName("Ride Assigned")
+    public void setRideAssigned(Boolean rideAssigned)
+    { this.rideAssigned = rideAssigned; }
+
+
+    @PropertyName("rejected_by")
+    public String getRejectedBy() {
+        return rejectedBy;
+    }
+
+    @PropertyName("rejected_by")
+    public void setRejectedBy(String rejectedBy) {
+        this.rejectedBy = rejectedBy;
     }
 
 

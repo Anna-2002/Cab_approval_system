@@ -8,6 +8,7 @@
     android:gravity="top"
     android:padding="16dp">
 
+    <!-- Search Bar -->
     <EditText
         android:id="@+id/search_bar"
         android:layout_width="match_parent"
@@ -20,7 +21,7 @@
         tools:ignore="TouchTargetSizeCheck" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/activity_history_adapter"
+        android:id="@+id/item_rejected_requests"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipToPadding="false"

@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -56,6 +57,8 @@ public class PersonalHistoryFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_personal_history, container, false);
 
+        EditText searchBar = view.findViewById(R.id.search_bar);
+        searchBar.setVisibility(View.GONE);
         recyclerView = view.findViewById(R.id.activity_history_adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 

@@ -1,6 +1,7 @@
 package com.example.cab_approval_system;
 
 import android.os.Bundle;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -58,6 +60,37 @@ public class SignupTabFragment extends Fragment {
         EditText confirmPasswordField = view.findViewById(R.id.signup_confirm);
         Button submitButton = view.findViewById(R.id.signup_button);
         TextView loginPageLink = view.findViewById(R.id.loginpage_link);
+        ImageView passwordToggle = view.findViewById(R.id.password_toggle);
+        ImageView confirmPasswordToggle = view.findViewById(R.id.confirm_password_toggle);
+
+        // Initialize password visibility state
+        boolean[] isPasswordVisible = {false};  // Using an array since lambdas require effectively final variables
+        boolean[] isConfirmPasswordVisible = {false};
+
+        passwordField.setTransformationMethod(new PasswordTransformationMethod());
+        passwordToggle.setOnClickListener(v -> {  // Change 'view' to 'v'
+            if (isPasswordVisible[0]) {
+                passwordField.setTransformationMethod(new PasswordTransformationMethod()); // Hide password
+                passwordToggle.setImageResource(R.drawable.closed_eye);
+            } else {
+                passwordField.setTransformationMethod(null); // Show password
+                passwordToggle.setImageResource(R.drawable.opened_eye);
+            }
+            isPasswordVisible[0] = !isPasswordVisible[0];
+        });
+
+        // Set confirm password toggle listener
+        confirmPasswordField.setTransformationMethod(new PasswordTransformationMethod());
+        confirmPasswordToggle.setOnClickListener(v -> {  // Change 'view' to 'v'
+            if (isConfirmPasswordVisible[0]) {
+                confirmPasswordField.setTransformationMethod(new PasswordTransformationMethod()); // Hide password
+                confirmPasswordToggle.setImageResource(R.drawable.closed_eye);
+            } else {
+                confirmPasswordField.setTransformationMethod(null); // Show password
+                confirmPasswordToggle.setImageResource(R.drawable.opened_eye);
+            }
+            isConfirmPasswordVisible[0] = !isConfirmPasswordVisible[0];
+        });
 
         // Setup Spinner
         Spinner designationSpinner = view.findViewById(R.id.designation_spinner);
@@ -78,7 +111,7 @@ public class SignupTabFragment extends Fragment {
             // Apply blur only to the background, not text
             if (v.getBackground() != null) {
                 v.getBackground().mutate().setFilterBitmap(true);
-                v.getBackground().setAlpha(200);  // Optional: Adjust transparency for better effect
+                v.getBackground().setAlpha(254);  // Optional: Adjust transparency for better effect
             }
         }
 

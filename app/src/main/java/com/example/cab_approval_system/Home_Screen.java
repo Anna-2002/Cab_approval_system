@@ -3,12 +3,15 @@ package com.example.cab_approval_system;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 public class Home_Screen extends AppCompatActivity {
     private String user_email,user_role;
+    private LinearLayout home_imageButtons;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,14 +22,26 @@ public class Home_Screen extends AppCompatActivity {
         user_email = getIntent().getStringExtra("email");
         user_role = getIntent().getStringExtra("userRole");
         setupBottomNavigation(this,user_email,user_role);
+
+        View[] blurView = {home_imageButtons};
+
+        for (View v : blurView) {
+            v.setLayerType(View.LAYER_TYPE_SOFTWARE, null); // Enable software rendering
+
+            // Apply blur only to the background, not text
+            if (v.getBackground() != null) {
+                v.getBackground().mutate().setFilterBitmap(true);
+                v.getBackground().setAlpha(254);  // Optional: Adjust transparency for better effect
+            }
+        }
     }
 
     // This method sets up the bottom navigation buttons and their click listeners
     public static void setupBottomNavigation(Context context, String user_email, String user_role) {
         // Initialize the ImageButtons with context
-        CardView homeButton = ((AppCompatActivity) context).findViewById(R.id.home_cardview);
-        CardView historyButton = ((AppCompatActivity) context).findViewById(R.id.history_cardview);
-        CardView profileButton = ((AppCompatActivity) context).findViewById(R.id.profile_cardview);
+        LinearLayout homeButton = ((AppCompatActivity) context).findViewById(R.id.home_button);
+        LinearLayout historyButton = ((AppCompatActivity) context).findViewById(R.id.history_button);
+        LinearLayout profileButton = ((AppCompatActivity) context).findViewById(R.id.profile_button);
 
 
         // Make sure CardView is clickable
