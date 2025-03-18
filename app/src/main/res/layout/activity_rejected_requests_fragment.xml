@@ -16,6 +16,8 @@
         android:background="@drawable/search_bar_edittext"
         android:drawableLeft="@android:drawable/ic_menu_search"
         android:hint="Search by Employee Name or ID"
+        android:textColorHint="@color/border_gray"
+        android:textSize="14sp"
         android:inputType="text"
         android:padding="1dp"
         tools:ignore="TouchTargetSizeCheck" />

@@ -160,7 +160,7 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
 
     }
 
-    private void approveRequest(RequestModel request, TextView statusTextView, ImageButton approve_button, ImageButton reject_button, TextView approved_display_textView, TextView reject_display_textView) {
+    private void approveRequest(RequestModel request, TextView statusTextView, Button approve_button, Button reject_button, TextView approved_display_textView, TextView reject_display_textView) {
         sheet1Ref.orderByChild("Official Email ID").equalTo(approverEmail)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -326,7 +326,7 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
     }
 
     private void rejectRequest(RequestModel request, TextView statusTextView,
-                               ImageButton approve_button, ImageButton reject_button,
+                               Button approve_button, Button reject_button,
                                TextView reject_display_textView, Button reject_save_button,
                                EditText reject_reason_editText, TextView reject_reason_textview, TextView rejectReason_Text) {
 
@@ -511,7 +511,8 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
                 purposeTextView, statusTextView, passengerCountTextView,passenger_details_title,approveFHName,approvedFHEmail,FHApprovedTime;
         Button reject_save_button;
         EditText rejectReasonEdittext;
-        ImageButton drop_down_button,approve_button,reject_button;
+        ImageButton drop_down_button;
+        Button approve_button,reject_button;
         LinearLayout detailsLayout, passengerLayout, pendingLayout,approvedFHnameLayout,approvedFHemailLayout,FHapprovedTimeLayout;
 
         public RequestViewHolder(@NonNull View itemView) {

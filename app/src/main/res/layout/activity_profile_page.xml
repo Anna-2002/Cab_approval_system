@@ -1,29 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     tools:context=".Profile_page">
 
+    <!-- Top Guideline -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <!-- Bottom Guideline -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <!-- Left Guideline -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <!-- Right Guideline -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <!-- Include Header -->
     <include
         android:id="@+id/include"
         layout="@layout/header"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Employee ID -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/emp_ID"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp">
+        android:padding="12dp"
+        app:layout_constraintStart_toStartOf="@id/guideline_left"
+        app:layout_constraintEnd_toEndOf="@id/guideline_right"
+        app:layout_constraintTop_toBottomOf="@id/include">
 
         <TextView
             android:id="@+id/employee_id_label"
-            android:layout_width="42dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Employee ID:"
@@ -31,21 +68,26 @@
 
         <TextView
             android:id="@+id/employee_id_profile"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_weight="1.5"
             android:text="Loading..." />
     </LinearLayout>
 
     <!-- Employee Name -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/emp_name"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp">
+        android:padding="12dp"
+        app:layout_constraintStart_toStartOf="@id/guideline_left"
+        app:layout_constraintEnd_toEndOf="@id/guideline_right"
+        app:layout_constraintTop_toBottomOf="@id/emp_ID">
+
         <TextView
             android:id="@+id/employee_name_label"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Name:"
@@ -53,21 +95,26 @@
 
         <TextView
             android:id="@+id/employee_name_profile"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_weight="1.5"
             android:text="Loading..." />
     </LinearLayout>
 
-    <!-- Email -->
+    <!-- Employee Email -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/emp_email"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp">
+        android:padding="12dp"
+        app:layout_constraintStart_toStartOf="@id/guideline_left"
+        app:layout_constraintEnd_toEndOf="@id/guideline_right"
+        app:layout_constraintTop_toBottomOf="@id/emp_name">
+
         <TextView
             android:id="@+id/employee_email_label"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Email:"
@@ -75,21 +122,26 @@
 
         <TextView
             android:id="@+id/employee_email_profile"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_weight="1.5"
             android:text="Loading..." />
     </LinearLayout>
 
     <!-- Team -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/team_section"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp">
+        android:padding="12dp"
+        app:layout_constraintStart_toStartOf="@id/guideline_left"
+        app:layout_constraintEnd_toEndOf="@id/guideline_right"
+        app:layout_constraintTop_toBottomOf="@id/emp_email">
+
         <TextView
             android:id="@+id/employee_team_label"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Team:"
@@ -97,22 +149,25 @@
 
         <TextView
             android:id="@+id/employee_team_profile"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_weight="1.5"
             android:text="Loading..." />
     </LinearLayout>
 
-    <!-- Mobile Number -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/mobile_num"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp">
+        android:padding="12dp"
+        app:layout_constraintStart_toStartOf="@id/guideline_left"
+        app:layout_constraintEnd_toEndOf="@id/guideline_right"
+        app:layout_constraintTop_toBottomOf="@id/team_section">
 
         <TextView
             android:id="@+id/employee_mobile_label"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Mobile:"
@@ -120,62 +175,76 @@
 
         <TextView
             android:id="@+id/employee_mobile_profile"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_weight="1.5"
             android:text="Loading..." />
     </LinearLayout>
+
+
+    <!-- Password Section -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/password"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp">
+        android:padding="12dp"
+        app:layout_constraintStart_toStartOf="@id/guideline_left"
+        app:layout_constraintEnd_toEndOf="@id/guideline_right"
+        app:layout_constraintTop_toBottomOf="@id/mobile_num">
 
         <TextView
             android:id="@+id/employee_password_label"
-            android:layout_width="82dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Password"
+            android:text="Password:"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/employee_password_text"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:text="" />
+            android:layout_weight="1.2"
+            android:text="********"
+            android:visibility="visible" />
+
         <EditText
             android:id="@+id/employee_password_editText"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:visibility="gone"
-            android:inputType="textPassword"/>
+            android:layout_weight="1.5"
+            android:inputType="textPassword"
+            android:visibility="gone" />
 
         <ImageView
             android:id="@+id/password_toggle"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginStart="8dp"
             android:clickable="true"
             android:focusable="true"
-            android:padding="8dp"
+            android:scaleType="centerInside"
             android:src="@drawable/closed_eye"
-            tools:ignore="TouchTargetSizeCheck,SpeakableTextPresentCheck" />
-
-        <Button
-            android:id="@+id/reset_password_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Reset Password">
-
-        </Button>
-
+            tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
     </LinearLayout>
+
+    <!-- Reset Password Button -->
+    <Button
+        android:id="@+id/reset_password_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="right"
+        android:padding="12dp"
+        android:text="Reset Password"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/password" />
     <include
         android:id="@+id/include1"
         layout="@layout/activity_home_screen"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-</LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

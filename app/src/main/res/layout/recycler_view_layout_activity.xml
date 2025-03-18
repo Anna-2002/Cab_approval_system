@@ -565,26 +565,24 @@
             android:paddingTop="20dp"
             android:paddingEnd="10dp">
 
-            <ImageButton
+            <Button
                 android:id="@+id/approve_button"
                 android:layout_width="0dp"
-                android:layout_height="30dp"
-                android:elevation="10dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="@drawable/approve_background"
+                android:text="Approve"
                 android:scaleType="fitCenter"
-                android:src="@drawable/approve_image_btn_crop"
+                android:backgroundTint="#22BC9F"
                 tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
 
-            <ImageButton
+            <Button
                 android:id="@+id/reject_button"
                 android:layout_width="0dp"
-                android:layout_height="30dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:elevation="10dp"
-                android:background="@drawable/reject_background"
+                android:text="Reject"
                 android:scaleType="fitCenter"
-                android:src="@drawable/reject_image_btn_crop"
+                android:backgroundTint="#D07A89"
                 tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
         </LinearLayout>
 
@@ -602,7 +600,7 @@
                 android:background="@drawable/approve_background"
                 android:text="Approved"
                 android:elevation="10dp"
-               android:visibility="gone"
+                android:visibility="gone"
                 android:gravity="center"
                 android:textColor="@color/main_color"
                 tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
@@ -620,5 +618,6 @@
                 tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
         </LinearLayout>
     </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

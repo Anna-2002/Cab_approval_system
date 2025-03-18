@@ -44,8 +44,7 @@ Profile_page extends AppCompatActivity {
         passwordReference = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
                 .getReference("Registration_data");
 
-        fetchUserDetails();
-        fetchVendorDetails();
+        fetchDetailsBasedOnDesignation();
         // Initialize views
         passwordTextView = findViewById(R.id.employee_password_text);
         resetSaveButton = findViewById(R.id.reset_password_button);
@@ -120,6 +119,27 @@ Profile_page extends AppCompatActivity {
             }
         });
     }
+    private void fetchDetailsBasedOnDesignation() {
+        DatabaseReference vendorRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("Vendor_details");
+
+        String modifiedEmail = userEmail.replace(".", ",");
+
+        vendorRef.child(modifiedEmail).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult().exists()) {
+                String designation = task.getResult().child("designation").getValue(String.class);
+
+                if (designation != null && designation.equals("Vendor")) {
+                    fetchVendorDetails();  // ✅ Fetch vendor details if the user is a vendor
+                } else {
+                    fetchUserDetails();  // ✅ Fetch normal user details otherwise
+                }
+            } else {
+                fetchUserDetails();  // ✅ If the user is not found in Vendor_details, fetch normal user details
+            }
+        });
+    }
+
     private void fetchUserDetails() {
         DatabaseReference sheetRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
                 .getReference("Sheet1");
