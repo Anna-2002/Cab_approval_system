@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.BlurMaskFilter;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -22,8 +23,11 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class LoginTabFragment extends Fragment {
 
@@ -125,6 +129,7 @@ public class LoginTabFragment extends Fragment {
         return view;
     }
 
+
     private void loginUser(String email, String password) {
         // Reference to Registration Data table
         DatabaseReference registrationReference = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app/")
@@ -187,6 +192,36 @@ public class LoginTabFragment extends Fragment {
                 });
     }
 
+    private void updateFcmToken(String email) {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        // Token fetch failed
+                        return;
+                    }
+
+                    String token = task.getResult();
+
+                    DatabaseReference regRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                            .getReference("Registration_data");
+
+                    regRef.orderByChild("email").equalTo(email)
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    for (DataSnapshot child : snapshot.getChildren()) {
+                                        child.getRef().child("fcm_token").setValue(token);
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+                                    // Optional: handle error
+                                }
+                            });
+                });
+    }
+
     private void checkVendorTable(String email) {
         DatabaseReference vendorReference = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app/")
                 .getReference("Vendor_details");
@@ -220,6 +255,10 @@ public class LoginTabFragment extends Fragment {
 
     private void navigateToHome(String email, String userRole) {
         Toast.makeText(getContext(), "Login successful as " + userRole, Toast.LENGTH_SHORT).show();
+
+        // 🔥 Update FCM token before navigating to home
+        updateFcmToken(email);
+
         Intent intent = new Intent(getContext(), Home_page.class);
         intent.putExtra("email", email);
         intent.putExtra("userRole", userRole);

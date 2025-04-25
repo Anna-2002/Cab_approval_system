@@ -1,6 +1,7 @@
 package com.example.cab_approval_system;
 
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -273,6 +274,8 @@ public class SignupTabFragment extends Fragment {
 
 
     private void saveRegistrationData(String employeeId, String name, String email, String password, TextView loginPageLink) {
+        String deviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+
         // Check if the user is already registered in the Registration_data node
         databaseReference.child(email.replace(".", ","))
                 .get()
@@ -292,6 +295,7 @@ public class SignupTabFragment extends Fragment {
                                         employee.put("email", email);
                                         employee.put("password", password);
                                         employee.put("fcm_token", token);
+                                        employee.put("device_id", deviceId);
 
                                         // Save the new registration
                                         databaseReference.child(email.replace(".", ","))

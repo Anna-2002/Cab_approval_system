@@ -1,8 +1,16 @@
 package com.example.cab_approval_system;
 
+
+import android.Manifest;
 import android.app.DatePickerDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.TimePickerDialog;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
@@ -14,6 +22,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -22,9 +34,17 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -33,6 +53,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+
 
 public class Request_ride extends AppCompatActivity {
 
@@ -49,6 +71,9 @@ public class Request_ride extends AppCompatActivity {
             outer_num_of_passenger_layout, inner_num_of_passenger_layout, passengerdetails_layout;
     private int passenger_count;
     Map<String, String> passengerMap = new HashMap<>();
+    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 101;
+    private static final String CHANNEL_ID = "cab_approval_notifications";
+    private static final String FCM_SERVER_KEY = "f50cc0f02ff73c102676121cf85d8b66d9b0813f";
 
 
     @Override
@@ -96,8 +121,45 @@ public class Request_ride extends AppCompatActivity {
                     }
                 });
         FirebaseApp.initializeApp(this);
-
+        checkNotificationPermission(); // Ensure permission is checked
+        createNotificationChannel();
     }
+    private void checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13+ (API 33)
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_PERMISSION_REQUEST_CODE);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    //creating notification channel for push notification
+    private void createNotificationChannel()
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Cab Approval Notifications";
+            String description = "Notifications for ride request approvals";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+
 
     private void initializeUI() {
         time_picker_button = findViewById(R.id.time_picker_button);
@@ -311,10 +373,10 @@ public class Request_ride extends AppCompatActivity {
                 int finalNewId = lastId + 1;
 
                 // Create a new request with updated ID
-                RideRequest request = new RideRequest(finalNewId, pickupLocation, dropoffLocation, time, date, purpose, no_of_passengers, email,passengerMap);
+                RideRequest request = new RideRequest(finalNewId, pickupLocation, dropoffLocation, time, date, purpose, no_of_passengers, email, passengerNames);
                 requestDetailsRef.child(String.valueOf(finalNewId)).setValue(request)
                         .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(Request_ride.this, "Ride Requested ", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Request_ride.this, "Ride Requested", Toast.LENGTH_SHORT).show();
                             clearFields();
 
                             // Update the counter in Firebase after saving
@@ -322,10 +384,27 @@ public class Request_ride extends AppCompatActivity {
                                     .addOnSuccessListener(unused -> {
                                         fetchApproverEmail(email, approverEmail -> {
                                             if (approverEmail != null) {
-                                                fetchApproverToken(approverEmail, token -> {
-                                                    if (token != null) {
-                                                        sendFCMNotification(finalNewId, token);
-                                                        saveNotificationData(finalNewId, approverEmail); // Save notification data
+                                                fetchApproverToken(approverEmail, approverToken -> {
+                                                    if (approverToken != null) {
+                                                        fetchDeviceIdByEmail(approverEmail, approverDeviceId -> {
+                                                            fetchRequesterToken(email, requesterToken -> {
+                                                                if (requesterToken != null) {
+                                                                    fetchDeviceIdByEmail(email, requesterDeviceId -> {
+                                                                        // ✅ All tokens and device IDs fetched, proceed
+                                                                        Log.d("FCM", "Approver: Token=" + approverToken + ", DeviceID=" + approverDeviceId);
+                                                                        Log.d("FCM", "Requester: Token=" + requesterToken + ", DeviceID=" + requesterDeviceId);
+
+                                                                        saveNotificationData(finalNewId, approverEmail);
+                                                                        new Handler().postDelayed(() -> {
+                                                                                  // Finish the current activity to prevent going back to it
+                                                                        sendFCMNotification(finalNewId, requesterToken, requesterDeviceId, approverToken, approverDeviceId);
+                                                                        }, 1000);
+                                                                    });
+                                                                } else {
+                                                                    Toast.makeText(Request_ride.this, "Requester FCM token not found", Toast.LENGTH_SHORT).show();
+                                                                }
+                                                            });
+                                                        });
                                                     } else {
                                                         Toast.makeText(Request_ride.this, "Approver FCM token not found", Toast.LENGTH_SHORT).show();
                                                     }
@@ -342,6 +421,55 @@ public class Request_ride extends AppCompatActivity {
                 Toast.makeText(Request_ride.this, "Error retrieving request_counter", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void fetchDeviceIdByEmail(String email, OnDeviceIdFetchedListener listener) {
+        DatabaseReference usersRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("Registration_data");
+
+        usersRef.orderByChild("email").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String deviceId = null;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    deviceId = snapshot.child("device_id").getValue(String.class); // Check exact field name
+                }
+                listener.onDeviceIdFetched(deviceId);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(Request_ride.this, "Failed to fetch Device ID: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    interface OnDeviceIdFetchedListener {
+        void onDeviceIdFetched(String deviceId);
+    }
+
+
+
+    private void fetchRequesterToken(String email,  OnTokenFetchedListener listener) {
+        DatabaseReference usersRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("Registration_data");// Firebase doesn't allow dots in keys
+
+        usersRef.orderByChild("email").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String token = null;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    token = snapshot.child("fcm_token").getValue(String.class);
+                }
+                listener.onTokenFetched(token);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(Request_ride.this, "Failed to fetch FCM token: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 
     private void fetchApproverToken(String approverEmail, OnTokenFetchedListener listener) {
@@ -369,11 +497,102 @@ public class Request_ride extends AppCompatActivity {
         void onTokenFetched(String token);
     }
 
-    private void sendFCMNotification(int requestId, String token) {
-        String message = "A new ride request has been submitted with ID: " + requestId;
-        // Send notification via FCM (Actual FCM logic should be added here)
-        Log.d("FCM", "Sending notification to token: " + token + " with message: " + message);
+    private void sendLocalNotification(String title, String message) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                Log.e("Notification", "Permission not granted, skipping notification.");
+                return; // Don't send notification if permission is not granted
+            }
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify((int) System.currentTimeMillis(), builder.build());
     }
+
+    private void sendFCMNotification(int requestId, String requesterToken, String requesterDeviceId, String approverToken, String approverDeviceId) {
+        String titleRequester = "Ride Requested";
+        String messageRequester = "Your ride request with ID " + requestId + " has been submitted.";
+        String titleApprover = "Request Approval Pending";
+        String messageApprover = "New ride request (ID: " + requestId + ") is pending your approval.";
+
+        // Logging device IDs
+        Log.d("PushLog", "Sending to Requester: DeviceID=" + requesterDeviceId + ", Token=" + requesterToken);
+        Log.d("PushLog", "Sending to Approver: DeviceID=" + approverDeviceId + ", Token=" + approverToken);
+
+        sendNotificationToDevice(requesterToken, titleRequester, messageRequester);
+        sendNotificationToDevice(approverToken, titleApprover, messageApprover);
+
+        sendLocalNotification(titleRequester, messageRequester); // Optional local fallback
+        sendLocalNotification(titleApprover, messageApprover);
+    }
+
+    private void sendNotificationToDevice(String token, String title, String message) {
+        try {
+            RequestQueue queue = Volley.newRequestQueue(this);
+            String url = "https://fcm.googleapis.com/v1/projects/cab-approval-system/messages:send\n";
+
+            JSONObject json = new JSONObject();
+            json.put("to", token);  // ✅ FCM token
+            Log.d("to_token", token);
+
+            JSONObject notification = new JSONObject();
+            notification.put("title", title);
+            notification.put("body", message);
+            notification.put("sound", "default");
+
+            json.put("notification", notification);
+
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, json,
+                    response -> Log.d("FCM", "Notification sent successfully: " + response.toString()),
+                    error -> {
+                        Log.e("FCM", "Volley error: " + error.toString());
+                        if (error.networkResponse != null) {
+                            Log.e("FCM", "Status code: " + error.networkResponse.statusCode);
+                            try {
+                                String responseBody = new String(error.networkResponse.data, "utf-8");
+                                Log.e("FCM", "Error body: " + responseBody);
+                            } catch (UnsupportedEncodingException e) {
+                                Log.e("FCM", "Encoding error while reading error body: " + e.getMessage());
+                            }
+                        } else {
+                            Log.e("FCM", "NetworkResponse is null");
+                        }
+                    }) {
+
+                @Override
+                public Map<String, String> getHeaders() {
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("Authorization", "key=6574b46cb1c850a522bc8244ea110cb68ecde71b"); // 🔐 Use "key=" prefix
+                    headers.put("Content-Type", "application/json");
+                    return headers;
+                }
+
+                @Override
+                public byte[] getBody() {
+                    try {
+                        String requestBody = json.toString();
+                        Log.d("FCM_BODY", requestBody);
+                        return requestBody.getBytes("utf-8");
+                    } catch (UnsupportedEncodingException e) {
+                        Log.e("FCM", "Encoding error: " + e.getMessage());
+                        return null;
+                    }
+                }
+            };
+
+            queue.add(request);
+        } catch (Exception e) {
+            Log.e("FCM", "Exception sending FCM: " + e.getMessage());
+        }
+    }
+
 
     private void saveNotificationData(int requestId, String approverEmail) {
         DatabaseReference notificationRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
