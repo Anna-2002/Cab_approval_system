@@ -30,6 +30,8 @@ public class RequestModel {
     private String rejectionReason;
     private String HR_approver_name;
     private String rejectedBy;
+    private String projectType;
+    private String vehicleType;
 
     private Boolean rideAssigned;
 
@@ -294,5 +296,27 @@ public class RequestModel {
         this.rejectedBy = rejectedBy;
     }
 
+    @PropertyName("Project")
+    public String getProjectType()
+    {
+        return projectType;
+    }
 
+    @PropertyName("Project")
+    public void setProjectType(String projectType)
+    {
+        this.projectType = projectType;
+    }
+
+    @PropertyName("VehicleType")
+    public String getVehicleType()
+    {
+        return vehicleType;
+    }
+
+    @PropertyName("VehicleType")
+    public void setVehicleType(String vehicleType)
+    {
+        this.vehicleType = vehicleType;
+    }
 }

@@ -242,6 +242,7 @@ public class ApprovedByFunctionalHeadFragment extends Fragment {
                                 String date = data.child("date").getValue(String.class);
                                 String time = data.child("time").getValue(String.class);
                                 String purpose = data.child("purpose").getValue(String.class);
+                                String project =  data.child("project_type").getValue(String.class);
 
                                 // Set fields in RequestModel
                                 request.setEmpEmail(emailId);
@@ -250,7 +251,9 @@ public class ApprovedByFunctionalHeadFragment extends Fragment {
                                 request.setDate(date);
                                 request.setTime(time);
                                 request.setPurpose(purpose);
+                                request.setProjectType(project);
 
+                                Log.d("project_type"," "+request.getProjectType());
 
                             }
                             fetchEmployeeDetails(request);

@@ -106,6 +106,7 @@ public class Pending_approvals extends AppCompatActivity {
                             request.setDropoffLocation(snapshot.child("dropoffLocation").getValue(String.class));
                             request.setDate(snapshot.child("date").getValue(String.class));
                             request.setPurpose(snapshot.child("purpose").getValue(String.class));
+                            request.setProjectType(snapshot.child("project_type").getValue(String.class));
                             request.setTime(snapshot.child("time").getValue(String.class));
                             request.setStatus(snapshot.child("status").getValue(String.class));
 

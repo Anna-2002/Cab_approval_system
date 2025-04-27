@@ -93,6 +93,9 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
         holder.approveFHName.setText(request.getApprovedFHName());
         holder.approvedFHEmail.setText(request.getApprovedFHEmail());
         holder.FHApprovedTime.setText(request.getFH_Approved_Time());
+        holder.projectTypeTextView.setText(request.getProjectType());
+
+        Log.d("project"," " + request.getProjectType());
 
         // Reset Visibility Before Setting Conditions
         holder.rejectReason_Text.setVisibility(View.GONE);
@@ -155,7 +158,8 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
 
         holder.reject_button.setOnClickListener(view -> {
             rejectRequest(request, holder.statusTextView, holder.approve_button, holder.reject_button,
-                    holder.reject_display_textView, holder.reject_save_button, holder.rejectReasonEdittext, holder.rejectReasonTextview, holder.rejectReason_Text);
+                    holder.reject_display_textView, holder.reject_save_button, holder.rejectReasonEdittext,
+                    holder.rejectReasonTextview, holder.rejectReason_Text, holder.reject_back_button);
         });
 
     }
@@ -244,6 +248,7 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
                                                             approvedData.put("Emp_email", request.getEmpEmail());
                                                             approvedData.put("Source", request.getPickupLocation());
                                                             approvedData.put("Purpose", request.getPurpose());
+                                                            approvedData.put("Project",request.getProjectType());
                                                             approvedData.put("Time", request.getTime());
                                                             approvedData.put("no_of_passengers", request.getNoOfPassengers());
                                                             approvedData.put("request_id", requestIdLong);
@@ -328,23 +333,24 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
     private void rejectRequest(RequestModel request, TextView statusTextView,
                                Button approve_button, Button reject_button,
                                TextView reject_display_textView, Button reject_save_button,
-                               EditText reject_reason_editText, TextView reject_reason_textview, TextView rejectReason_Text) {
+                               EditText reject_reason_editText, TextView reject_reason_textview, TextView rejectReason_Text, Button reject_back_button) {
 
         // Show reason input field and save button, hide reject button
         rejectReason_Text.setVisibility(View.GONE);
         reject_reason_editText.setVisibility(View.VISIBLE);
+        reject_back_button.setVisibility(View.VISIBLE);
         reject_save_button.setVisibility(View.VISIBLE);
         reject_reason_textview.setVisibility(View.VISIBLE);
         reject_button.setVisibility(View.GONE);
         approve_button.setVisibility(View.GONE);
 
         reject_save_button.setOnClickListener(view -> {
+            reject_back_button.setVisibility(View.GONE);
             String rejectionReason = reject_reason_editText.getText().toString().trim();
             if (rejectionReason.isEmpty()) {
                 Toast.makeText(context, "Please enter a reason for rejection.", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             request.setRejectionReason(rejectionReason);
 
             sheet1Ref.orderByChild("Official Email ID").equalTo(approverEmail)
@@ -399,6 +405,7 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
                                             rejectedData.put("Source", request.getPickupLocation());
                                             rejectedData.put("Destination", request.getDropoffLocation());
                                             rejectedData.put("Purpose", request.getPurpose());
+                                            rejectedData.put("Project",request.getProjectType());
                                             rejectedData.put("Time", request.getTime());
                                             rejectedData.put("no_of_passengers", request.getNoOfPassengers());
                                             rejectedData.put("Reason", request.getRejectionReason());
@@ -441,6 +448,17 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
                             Toast.makeText(context, "Failed to fetch approver details.", Toast.LENGTH_SHORT).show();
                         }
                     });
+        });
+        reject_back_button.setOnClickListener(view ->{
+            // Hide reason input fields and save button
+            reject_reason_editText.setVisibility(View.GONE);
+            reject_save_button.setVisibility(View.GONE);
+            reject_reason_textview.setVisibility(View.GONE);
+            reject_back_button.setVisibility(View.GONE);
+
+            // Show original approve/reject buttons
+            approve_button.setVisibility(View.VISIBLE);
+            reject_button.setVisibility(View.VISIBLE);
         });
     }
 
@@ -507,9 +525,9 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
     public static class RequestViewHolder extends RecyclerView.ViewHolder {
 
         TextView nameTextView, empIdTextView, empEmailTextView, pickupTextView, rejectReasonTextview,rejectReason_Text,
-                dropoffTextView, dateTextView, timeTextView, pendingTextView,approved_display_textView,reject_display_textView,
+                dropoffTextView, dateTextView, timeTextView, pendingTextView,approved_display_textView,reject_display_textView,projectTypeTextView,
                 purposeTextView, statusTextView, passengerCountTextView,passenger_details_title,approveFHName,approvedFHEmail,FHApprovedTime;
-        Button reject_save_button;
+        Button reject_save_button, reject_back_button;
         EditText rejectReasonEdittext;
         ImageButton drop_down_button;
         Button approve_button,reject_button;
@@ -548,7 +566,8 @@ public class Recycler_adapter extends RecyclerView.Adapter<Recycler_adapter.Requ
             rejectReasonEdittext = itemView.findViewById(R.id.reject_reason_edittext);
             rejectReasonTextview = itemView.findViewById(R.id.reject_reason_textview);
             rejectReason_Text = itemView.findViewById(R.id.reject_reason);
-
+            reject_back_button =  itemView.findViewById(R.id.reject_reason_back_button);
+            projectTypeTextView =  itemView.findViewById(R.id.project_textview);
         }
 
     }

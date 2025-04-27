@@ -64,11 +64,11 @@ public class Request_ride extends AppCompatActivity {
     private View num_of_people_horizontal_layout;
     private ToggleButton select_toggle_button;
     private Button request_button,save_button;
-    private EditText pickup, dropoff,purpose_of_ride;
+    private EditText pickup, dropoff,purpose_of_ride,project,vehicle_type;
     private String email_id;
     private LinearLayout passenger_layout, main_passenger_layout, source_layout,
             destination_layout, time_picker_layout, date_picker_layout, purpose_layout,
-            outer_num_of_passenger_layout, inner_num_of_passenger_layout, passengerdetails_layout;
+            outer_num_of_passenger_layout, inner_num_of_passenger_layout, passengerdetails_layout,project_layout, vehicleType_layout;
     private int passenger_count;
     Map<String, String> passengerMap = new HashMap<>();
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 101;
@@ -91,6 +91,8 @@ public class Request_ride extends AppCompatActivity {
         outer_num_of_passenger_layout =  findViewById(R.id.outer_num_of_passenger_layout);
         inner_num_of_passenger_layout =  findViewById(R.id.inner_num_of_passenger_layout);
         passengerdetails_layout = findViewById(R.id.passengerdetails_layout);
+        project_layout = findViewById(R.id.project_layout);
+        vehicleType_layout = findViewById(R.id.vehicleType_layout);
 
         initializeUI();
 
@@ -100,8 +102,8 @@ public class Request_ride extends AppCompatActivity {
         setupToggleButton();
         setupRequestButton();
 
-        View[] blurView = {request_heading, passenger_layout, source_layout, destination_layout, time_picker_layout, date_picker_layout, purpose_layout, outer_num_of_passenger_layout,
-                inner_num_of_passenger_layout, main_passenger_layout, passengerdetails_layout};
+        View[] blurView = {request_heading, passenger_layout, source_layout, destination_layout, time_picker_layout, date_picker_layout, purpose_layout,project_layout,outer_num_of_passenger_layout,
+                inner_num_of_passenger_layout, main_passenger_layout, passengerdetails_layout, vehicleType_layout};
 
         for (View v : blurView) {
             v.setLayerType(View.LAYER_TYPE_SOFTWARE, null); // Enable software rendering
@@ -181,6 +183,8 @@ public class Request_ride extends AppCompatActivity {
         save_button = findViewById(R.id.save_button);
         passenger_name_display =  findViewById(R.id.passenger_name_display);
         main_passenger_layout = findViewById(R.id.main_passenger_layout);
+        project =  findViewById(R.id.project_edittext);
+        vehicle_type = findViewById(R.id.vehicle_type_edittext);
     }
 
     // method to fetch time
@@ -346,13 +350,15 @@ public class Request_ride extends AppCompatActivity {
             String time = time_selected.getText().toString();
             String date = date_selected.getText().toString();
             String purpose = purpose_of_ride.getText().toString();
+            String project_type =  project.getText().toString();
+            String vehicleType = vehicle_type.getText().toString();
             String no_of_passengers = num_of_riders_edit_text.getText().toString();
             email_id = getIntent().getStringExtra("email");
 
             if (time.isEmpty() || date.isEmpty() || purpose.isEmpty() || no_of_passengers.isEmpty()) {
                 Toast.makeText(Request_ride.this, "All fields need to be filled", Toast.LENGTH_SHORT).show();
             } else {
-                saveDetails(pickup_location, dropoff_location, time, date, purpose, no_of_passengers, email_id, passengerMap);
+                saveDetails(pickup_location, dropoff_location, time, date, purpose, no_of_passengers, email_id, passengerMap, project_type, vehicleType);
             }
         });
     }
@@ -361,7 +367,7 @@ public class Request_ride extends AppCompatActivity {
     //approver email is being fetched and also using fcm token sending notification to that specific approver for approval.
     //the approver on logging in can see the pending approvals as a dot icon in their app.
 
-    private void saveDetails(String pickupLocation, String dropoffLocation, String time, String date, String purpose, String no_of_passengers, String email, Map<String, String> passengerNames) {
+    private void saveDetails(String pickupLocation, String dropoffLocation, String time, String date, String purpose, String no_of_passengers, String email, Map<String, String> passengerNames, String project, String vehicle_type) {
         FirebaseDatabase database = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app");
         DatabaseReference requestDetailsRef = database.getReference("Request_details");
         DatabaseReference lastIdRef = database.getReference("Request_Counter");
@@ -373,7 +379,7 @@ public class Request_ride extends AppCompatActivity {
                 int finalNewId = lastId + 1;
 
                 // Create a new request with updated ID
-                RideRequest request = new RideRequest(finalNewId, pickupLocation, dropoffLocation, time, date, purpose, no_of_passengers, email, passengerNames);
+                RideRequest request = new RideRequest(finalNewId, pickupLocation, dropoffLocation, time, date, purpose, no_of_passengers, email, passengerNames, project, vehicle_type);
                 requestDetailsRef.child(String.valueOf(finalNewId)).setValue(request)
                         .addOnSuccessListener(aVoid -> {
                             Toast.makeText(Request_ride.this, "Ride Requested", Toast.LENGTH_SHORT).show();
@@ -654,6 +660,8 @@ public class Request_ride extends AppCompatActivity {
         people_count.setText("0");
         select_toggle_button.setChecked(false);
         purpose_of_ride.setText("");
+        project.setText("");
+        vehicle_type.setText("");
     }
     public class RideRequest {
         private int id;
@@ -664,12 +672,14 @@ public class Request_ride extends AppCompatActivity {
         private String purpose;
         private String no_of_passengers ;
         private String email;
+        private String vehicle_type;
         private Map<String, String> passengerNames;
+        String project_type;
 
         public RideRequest(){
         }
 
-        public RideRequest(int id, String pickupLocation, String dropoffLocation, String time, String date, String purpose, String no_of_passengers, String email, Map<String, String> passengerNames) {
+        public RideRequest(int id, String pickupLocation, String dropoffLocation, String time, String date, String purpose, String no_of_passengers, String email, Map<String, String> passengerNames, String project_type, String vehicle_type) {
             this.id = id;
             this.pickupLocation = pickupLocation;
             this.dropoffLocation = dropoffLocation;
@@ -679,6 +689,8 @@ public class Request_ride extends AppCompatActivity {
             this.no_of_passengers  = no_of_passengers;
             this.email = email;
             this.passengerNames = passengerNames;
+            this.project_type = project_type;
+            this.vehicle_type =  vehicle_type;
         }
 
         // Getters and Setters
@@ -700,6 +712,10 @@ public class Request_ride extends AppCompatActivity {
         public void setEmail(String email) { this.email = email; }
         public Map<String, String> getPassengerNames() { return passengerNames; }
         public void setPassengerNames(Map<String, String> passengerNames) { this.passengerNames = passengerNames; }
+        public String getProject_type(){return project_type;};
+        public void setProject_type(){this.project_type = project_type;}
+        public String getVehicle_type(){return vehicle_type;};
+        public void setVehicle_type(){this.vehicle_type = vehicle_type;}
     }
 
 }
