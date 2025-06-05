@@ -13,6 +13,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.text.TextUtils;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -128,7 +129,6 @@ public class LoginTabFragment extends Fragment {
 
         return view;
     }
-
 
     private void loginUser(String email, String password) {
         // Reference to Registration Data table

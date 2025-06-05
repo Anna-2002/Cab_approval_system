@@ -54,6 +54,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class Request_ride extends AppCompatActivity {
@@ -72,7 +75,6 @@ public class Request_ride extends AppCompatActivity {
     private int passenger_count;
     Map<String, String> passengerMap = new HashMap<>();
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 101;
-    private static final String CHANNEL_ID = "cab_approval_notifications";
     private static final String FCM_SERVER_KEY = "f50cc0f02ff73c102676121cf85d8b66d9b0813f";
 
 
@@ -154,10 +156,12 @@ public class Request_ride extends AppCompatActivity {
             CharSequence name = "Cab Approval Notifications";
             String description = "Notifications for ride request approvals";
             int importance = NotificationManager.IMPORTANCE_HIGH;
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            NotificationChannel channel = new NotificationChannel("cab_approval_notification", name, importance);
             channel.setDescription(description);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
         }
     }
 
@@ -511,7 +515,7 @@ public class Request_ride extends AppCompatActivity {
             }
         }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "cab_approval_notification")
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(title)
                 .setContentText(message)
@@ -523,80 +527,50 @@ public class Request_ride extends AppCompatActivity {
     }
 
     private void sendFCMNotification(int requestId, String requesterToken, String requesterDeviceId, String approverToken, String approverDeviceId) {
-        String titleRequester = "Ride Requested";
-        String messageRequester = "Your ride request with ID " + requestId + " has been submitted.";
-        String titleApprover = "Request Approval Pending";
-        String messageApprover = "New ride request (ID: " + requestId + ") is pending your approval.";
+        String title = "Ride Request Update";
+        String message = "Ride request ID " + requestId + " needs your attention.";
 
-        // Logging device IDs
-        Log.d("PushLog", "Sending to Requester: DeviceID=" + requesterDeviceId + ", Token=" + requesterToken);
-        Log.d("PushLog", "Sending to Approver: DeviceID=" + approverDeviceId + ", Token=" + approverToken);
+        List<String> tokens = new ArrayList<>();
+        tokens.add(requesterToken);
+        tokens.add(approverToken);
 
-        sendNotificationToDevice(requesterToken, titleRequester, messageRequester);
-        sendNotificationToDevice(approverToken, titleApprover, messageApprover);
+        sendNotificationToMultipleDevices(tokens, title, message);
 
-        sendLocalNotification(titleRequester, messageRequester); // Optional local fallback
-        sendLocalNotification(titleApprover, messageApprover);
+        sendLocalNotification(title, message);  // Optional Local Notification
     }
 
-    private void sendNotificationToDevice(String token, String title, String message) {
-        try {
-            RequestQueue queue = Volley.newRequestQueue(this);
-            String url = "https://fcm.googleapis.com/v1/projects/cab-approval-system/messages:send\n";
+    private void sendNotificationToMultipleDevices(List<String> tokens, String title, String message) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://cab-notification-service.onrender.com/") // ✅ your Render server URL
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
 
-            JSONObject json = new JSONObject();
-            json.put("to", token);  // ✅ FCM token
-            Log.d("to_token", token);
+        NotificationAPI notificationAPI = retrofit.create(NotificationAPI.class);
 
-            JSONObject notification = new JSONObject();
-            notification.put("title", title);
-            notification.put("body", message);
-            notification.put("sound", "default");
+        Map<String, String> notificationData = new HashMap<>();
+        notificationData.put("title", title);
+        notificationData.put("body", message);
 
-            json.put("notification", notification);
 
-            JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, json,
-                    response -> Log.d("FCM", "Notification sent successfully: " + response.toString()),
-                    error -> {
-                        Log.e("FCM", "Volley error: " + error.toString());
-                        if (error.networkResponse != null) {
-                            Log.e("FCM", "Status code: " + error.networkResponse.statusCode);
-                            try {
-                                String responseBody = new String(error.networkResponse.data, "utf-8");
-                                Log.e("FCM", "Error body: " + responseBody);
-                            } catch (UnsupportedEncodingException e) {
-                                Log.e("FCM", "Encoding error while reading error body: " + e.getMessage());
-                            }
-                        } else {
-                            Log.e("FCM", "NetworkResponse is null");
-                        }
-                    }) {
+        NotificationBody body = new NotificationBody(tokens, notificationData);
 
-                @Override
-                public Map<String, String> getHeaders() {
-                    Map<String, String> headers = new HashMap<>();
-                    headers.put("Authorization", "key=6574b46cb1c850a522bc8244ea110cb68ecde71b"); // 🔐 Use "key=" prefix
-                    headers.put("Content-Type", "application/json");
-                    return headers;
+        Call<Void> call = notificationAPI.sendNotification(body);
+
+        call.enqueue(new retrofit2.Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d("RetrofitFCM", "Notification sent successfully");
+                } else {
+                    Log.e("RetrofitFCM", "Failed: " + response.code());
                 }
+            }
 
-                @Override
-                public byte[] getBody() {
-                    try {
-                        String requestBody = json.toString();
-                        Log.d("FCM_BODY", requestBody);
-                        return requestBody.getBytes("utf-8");
-                    } catch (UnsupportedEncodingException e) {
-                        Log.e("FCM", "Encoding error: " + e.getMessage());
-                        return null;
-                    }
-                }
-            };
-
-            queue.add(request);
-        } catch (Exception e) {
-            Log.e("FCM", "Exception sending FCM: " + e.getMessage());
-        }
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("RetrofitFCM", "Error sending notification: " + t.getMessage());
+            }
+        });
     }
 
 

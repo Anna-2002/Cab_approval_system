@@ -27,15 +27,6 @@
         android:theme="@style/Theme.Supra_Cabs"
         tools:targetApi="31">
         <activity
-            android:name=".RejectedRequestsFragment"
-            android:exported="false" />
-        <activity
-            android:name=".Rejected_history_adapter"
-            android:exported="false" />
-        <activity
-            android:name=".AllRejectedRequestsFragment"
-            android:exported="false" />
-        <activity
             android:name=".Cab_request"
             android:exported="false" />
         <activity
@@ -76,6 +67,14 @@
         <service
             android:name=".Request_ride"
             android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
