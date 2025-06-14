@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const SibApiV3Sdk = require("sib-api-v3-sdk");
-require("dotenv").config(); // Optional: to support local .env files
+require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -10,7 +10,6 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Use Brevo (Sendinblue) API key from environment variable
 const apiKey = process.env.BREVO_API_KEY;
 if (!apiKey) {
   console.error("❌ BREVO_API_KEY not set in environment variables!");
