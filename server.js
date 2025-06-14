@@ -22,7 +22,14 @@ defaultClient.authentications['api-key'].apiKey = apiKey;
 app.post("/send-mail", async (req, res) => {
   const { requesterEmail, approverEmail, requesterName } = req.body;
 
+  // Log the incoming request body
+  console.log("Incoming request body:", req.body);
+  console.log("Requester Email:", requesterEmail);
+  console.log("Approver Email:", approverEmail);
+  console.log("Requester Name:", requesterName);
+
   if (!requesterEmail || !approverEmail || !requesterName) {
+    console.error("Missing required fields in request");
     return res.status(400).json({ message: "Missing required fields" });
   }
 
