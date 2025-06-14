@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -126,4 +125,3 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
->>>>>>> 93fd2b2436b309b2da935dcd6b9cc36bc925a8ad
