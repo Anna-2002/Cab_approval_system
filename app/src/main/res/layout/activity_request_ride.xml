@@ -275,7 +275,7 @@
                     android:padding="10dp"
                     android:elevation="10dp"
                     android:layout_marginTop="4dp"
-                    android:hint="Purpose of ride and project"
+                    android:hint="Purpose of ride"
                     android:textColor="@color/text_color"
                     android:textSize="16sp"
                     tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />

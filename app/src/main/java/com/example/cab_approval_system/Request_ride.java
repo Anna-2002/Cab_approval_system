@@ -1,6 +1,5 @@
 package com.example.cab_approval_system;
 
-
 import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.NotificationChannel;
@@ -22,10 +21,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -41,10 +36,16 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import okhttp3.OkHttpClient;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Body;
+import retrofit2.http.Headers;
+import retrofit2.http.POST;
 
-import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -53,43 +54,114 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-
+import java.util.concurrent.TimeUnit;
 
 public class Request_ride extends AppCompatActivity {
 
+    private MailService mailService;
     private ImageButton time_picker_button, date_picker_button, decrease_button, increase_button;
     private TextView time_selected, date_selected, people_count, num_of_riders_edit_text,
             passengers_details, passenger_name_display, request_heading;
     private View num_of_people_horizontal_layout;
     private ToggleButton select_toggle_button;
-    private Button request_button,save_button;
-    private EditText pickup, dropoff,purpose_of_ride,project,vehicle_type;
+    private Button request_button, save_button;
+    private EditText pickup, dropoff, purpose_of_ride, project, vehicle_type;
     private String email_id;
     private LinearLayout passenger_layout, main_passenger_layout, source_layout,
             destination_layout, time_picker_layout, date_picker_layout, purpose_layout,
-            outer_num_of_passenger_layout, inner_num_of_passenger_layout, passengerdetails_layout,project_layout, vehicleType_layout;
+            outer_num_of_passenger_layout, inner_num_of_passenger_layout, passengerdetails_layout, project_layout, vehicleType_layout;
     private int passenger_count;
     Map<String, String> passengerMap = new HashMap<>();
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 101;
     private static final String CHANNEL_ID = "cab_approval_notifications";
-    private static final String FCM_SERVER_KEY = "f50cc0f02ff73c102676121cf85d8b66d9b0813f";
+    private static final String TAG = "Request_ride"; // For logging
 
+    // FCM Server URL, changed to proper endpoint
+    private static final String FCM_API_URL = "https://fcm.googleapis.com/";
+    private static final String FCM_SERVER_KEY = "key=6574b46cb1c850a522bc8244ea110cb68ecde71b";
+
+    // Retrofit interface for FCM
+    private interface FCMService {
+        @Headers({
+                "Content-Type: application/json"
+        })
+        @POST("send-notification") // This should match your backend endpoint
+        Call<FCMResponse> sendNotification(@Body FCMRequest fcmRequest);
+    }
+
+    // FCM Request model
+    public class FCMRequest {
+        private String token;
+        private String title;
+        private String body;
+
+        public FCMRequest(String token, String title, String message) {
+            this.token = token;
+            this.title = title;
+            this.body = message;
+        }
+    }
+
+    //initializing Retrofit to send mail to requester and approver
+    private void initializeMailRetrofit() {
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .build();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://your-node-api.onrender.com/") // Replace with your actual Render URL
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build();
+
+        mailService = retrofit.create(MailService.class);
+    }
+
+
+    // FCM Response model
+    public class FCMResponse {
+        private boolean success;
+        private String messageId;
+        private int successCount;
+        private int failureCount;
+        private List<Object> failures;
+    }
+    // Retrofit instance for FCM
+    private FCMService fcmService;
+
+    private void initializeRetrofit() {
+        // Create OkHttpClient with increased timeout
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .build();
+
+        // Use your Render service URL, not FCM directly
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://cab-notification-service.onrender.com/") // Your Render URL
+                .client(okHttpClient)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        fcmService = retrofit.create(FCMService.class);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_request_ride);
 
-
         request_heading = findViewById(R.id.request_heading);
-        source_layout =  findViewById(R.id.source_layout);
-        destination_layout =  findViewById(R.id.destination_layout);
+        source_layout = findViewById(R.id.source_layout);
+        destination_layout = findViewById(R.id.destination_layout);
         time_picker_layout = findViewById(R.id.time_picker_layout);
         date_picker_layout = findViewById(R.id.date_picker_layout);
         purpose_layout = findViewById(R.id.purpose_layout);
-        outer_num_of_passenger_layout =  findViewById(R.id.outer_num_of_passenger_layout);
-        inner_num_of_passenger_layout =  findViewById(R.id.inner_num_of_passenger_layout);
+        outer_num_of_passenger_layout = findViewById(R.id.outer_num_of_passenger_layout);
+        inner_num_of_passenger_layout = findViewById(R.id.inner_num_of_passenger_layout);
         passengerdetails_layout = findViewById(R.id.passengerdetails_layout);
         project_layout = findViewById(R.id.project_layout);
         vehicleType_layout = findViewById(R.id.vehicleType_layout);
@@ -102,7 +174,7 @@ public class Request_ride extends AppCompatActivity {
         setupToggleButton();
         setupRequestButton();
 
-        View[] blurView = {request_heading, passenger_layout, source_layout, destination_layout, time_picker_layout, date_picker_layout, purpose_layout,project_layout,outer_num_of_passenger_layout,
+        View[] blurView = {request_heading, passenger_layout, source_layout, destination_layout, time_picker_layout, date_picker_layout, purpose_layout, project_layout, outer_num_of_passenger_layout,
                 inner_num_of_passenger_layout, main_passenger_layout, passengerdetails_layout, vehicleType_layout};
 
         for (View v : blurView) {
@@ -119,13 +191,15 @@ public class Request_ride extends AppCompatActivity {
         FirebaseMessaging.getInstance().subscribeToTopic("ride_requests")
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Log.d("FirebaseMessaging", "Subscribed to ride_requests topic");
+                        Log.d(TAG, "Subscribed to ride_requests topic");
                     }
                 });
         FirebaseApp.initializeApp(this);
+        initializeRetrofit();
         checkNotificationPermission(); // Ensure permission is checked
         createNotificationChannel();
     }
+
     private void checkNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13+ (API 33)
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -148,8 +222,7 @@ public class Request_ride extends AppCompatActivity {
     }
 
     //creating notification channel for push notification
-    private void createNotificationChannel()
-    {
+    private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Cab Approval Notifications";
             String description = "Notifications for ride request approvals";
@@ -160,8 +233,6 @@ public class Request_ride extends AppCompatActivity {
             notificationManager.createNotificationChannel(channel);
         }
     }
-
-
 
     private void initializeUI() {
         time_picker_button = findViewById(R.id.time_picker_button);
@@ -181,9 +252,9 @@ public class Request_ride extends AppCompatActivity {
         passengers_details = findViewById(R.id.passenger_details);
         passenger_layout = findViewById(R.id.passengerdetails_layout);
         save_button = findViewById(R.id.save_button);
-        passenger_name_display =  findViewById(R.id.passenger_name_display);
+        passenger_name_display = findViewById(R.id.passenger_name_display);
         main_passenger_layout = findViewById(R.id.main_passenger_layout);
-        project =  findViewById(R.id.project_edittext);
+        project = findViewById(R.id.project_edittext);
         vehicle_type = findViewById(R.id.vehicle_type_edittext);
     }
 
@@ -238,11 +309,6 @@ public class Request_ride extends AppCompatActivity {
         });
     }
 
-    //on click of select toggle button the number selected in edit text gets displayed in a text view and the same will be used to display edit texts to enter passenger names.
-    //on click of change toggle button we can edit the number of passengers and again enter passenger names as per the number entered.
-    // calling a function to dynamically generate edit texts to enter passenger names as per number selected.
-    //managing the visibility of buttons and layouts as per the requirements.
-
     private void setupToggleButton() {
         select_toggle_button.setOnCheckedChangeListener((buttonView, isChecked) -> {
             int passengerCount = Integer.parseInt(people_count.getText().toString());
@@ -274,9 +340,6 @@ public class Request_ride extends AppCompatActivity {
                 save_button.setVisibility(View.GONE);
             }
         });
-
-        //on click of save button the names entered in the edit texts gets saved and is viewed in a plane text.
-        // passenger names are stored in table under attribute name passengerNames as subfield.
 
         save_button.setOnClickListener(v -> {
             StringBuilder passengerNames = new StringBuilder();
@@ -315,8 +378,6 @@ public class Request_ride extends AppCompatActivity {
         });
     }
 
-//method to generate edit texts dynamically as per the number of passengers being selected.
-
     private void generateEditTexts(int numFields) {
         passenger_layout.removeAllViews(); // Ensure no leftover views
 
@@ -341,8 +402,6 @@ public class Request_ride extends AppCompatActivity {
         }
     }
 
-//on click of request button the entered details are being stored to request_details table and then is shown in pending request of specific approver.
-
     private void setupRequestButton() {
         request_button.setOnClickListener(v -> {
             String pickup_location = pickup.getText().toString();
@@ -350,7 +409,7 @@ public class Request_ride extends AppCompatActivity {
             String time = time_selected.getText().toString();
             String date = date_selected.getText().toString();
             String purpose = purpose_of_ride.getText().toString();
-            String project_type =  project.getText().toString();
+            String project_type = project.getText().toString();
             String vehicleType = vehicle_type.getText().toString();
             String no_of_passengers = num_of_riders_edit_text.getText().toString();
             email_id = getIntent().getStringExtra("email");
@@ -363,9 +422,52 @@ public class Request_ride extends AppCompatActivity {
         });
     }
 
-    // saving the details to request_details on click of request button and auto increment of request_counter
-    //approver email is being fetched and also using fcm token sending notification to that specific approver for approval.
-    //the approver on logging in can see the pending approvals as a dot icon in their app.
+    private void fetchRequesterName(String email, OnNameFetchedListener listener) {
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("Sheet1");
+
+        ref.orderByChild("Official Email ID").equalTo(email)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot child : snapshot.getChildren()) {
+                            String name = child.child("Employee Name").getValue(String.class);
+                            listener.onNameFetched(name);
+                            return;
+                        }
+                        listener.onNameFetched(null);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        listener.onNameFetched(null);
+                    }
+                });
+    }
+
+    public interface OnNameFetchedListener {
+        void onNameFetched(String name);
+    }
+
+    //Add this method to trigger email using Retrofit
+    private void sendEmailNotification(String requesterEmail, String approverEmail, String requesterName) {
+        MailRequest request = new MailRequest(requesterEmail, approverEmail, requesterName);
+        mailService.sendMail(request).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d("MailService", "Emails sent successfully");
+                } else {
+                    Log.e("MailService", "Failed with status: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                Log.e("MailService", "Error sending email", t);
+            }
+        });
+    }
 
     private void saveDetails(String pickupLocation, String dropoffLocation, String time, String date, String purpose, String no_of_passengers, String email, Map<String, String> passengerNames, String project, String vehicle_type) {
         FirebaseDatabase database = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app");
@@ -391,25 +493,11 @@ public class Request_ride extends AppCompatActivity {
                                         fetchApproverEmail(email, approverEmail -> {
                                             if (approverEmail != null) {
                                                 fetchApproverToken(approverEmail, approverToken -> {
-                                                    if (approverToken != null) {
-                                                        fetchDeviceIdByEmail(approverEmail, approverDeviceId -> {
-                                                            fetchRequesterToken(email, requesterToken -> {
-                                                                if (requesterToken != null) {
-                                                                    fetchDeviceIdByEmail(email, requesterDeviceId -> {
-                                                                        // ✅ All tokens and device IDs fetched, proceed
-                                                                        Log.d("FCM", "Approver: Token=" + approverToken + ", DeviceID=" + approverDeviceId);
-                                                                        Log.d("FCM", "Requester: Token=" + requesterToken + ", DeviceID=" + requesterDeviceId);
-
-                                                                        saveNotificationData(finalNewId, approverEmail);
-                                                                        new Handler().postDelayed(() -> {
-                                                                                  // Finish the current activity to prevent going back to it
-                                                                        sendFCMNotification(finalNewId, requesterToken, requesterDeviceId, approverToken, approverDeviceId);
-                                                                        }, 1000);
-                                                                    });
-                                                                } else {
-                                                                    Toast.makeText(Request_ride.this, "Requester FCM token not found", Toast.LENGTH_SHORT).show();
-                                                                }
-                                                            });
+                                                    if (approverEmail != null) {
+                                                        fetchRequesterName(email, requesterName -> {
+                                                            if (requesterName != null) {
+                                                                sendEmailNotification(email, approverEmail, requesterName);
+                                                            }
                                                         });
                                                     } else {
                                                         Toast.makeText(Request_ride.this, "Approver FCM token not found", Toast.LENGTH_SHORT).show();
@@ -429,58 +517,10 @@ public class Request_ride extends AppCompatActivity {
         });
     }
 
-    private void fetchDeviceIdByEmail(String email, OnDeviceIdFetchedListener listener) {
-        DatabaseReference usersRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
-                .getReference("Registration_data");
-
-        usersRef.orderByChild("email").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                String deviceId = null;
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    deviceId = snapshot.child("device_id").getValue(String.class); // Check exact field name
-                }
-                listener.onDeviceIdFetched(deviceId);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(Request_ride.this, "Failed to fetch Device ID: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    interface OnDeviceIdFetchedListener {
-        void onDeviceIdFetched(String deviceId);
-    }
-
-
-
-    private void fetchRequesterToken(String email,  OnTokenFetchedListener listener) {
-        DatabaseReference usersRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
-                .getReference("Registration_data");// Firebase doesn't allow dots in keys
-
-        usersRef.orderByChild("email").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                String token = null;
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    token = snapshot.child("fcm_token").getValue(String.class);
-                }
-                listener.onTokenFetched(token);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(Request_ride.this, "Failed to fetch FCM token: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-
-    }
-
+    // Modified to fetch only approver token
     private void fetchApproverToken(String approverEmail, OnTokenFetchedListener listener) {
         DatabaseReference usersRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
-                .getReference("Registration_data");  // Assuming you have a 'Users' table where the FCM token is stored
+                .getReference("Registration_data");
 
         usersRef.orderByChild("email").equalTo(approverEmail).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -488,13 +528,49 @@ public class Request_ride extends AppCompatActivity {
                 String token = null;
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     token = snapshot.child("fcm_token").getValue(String.class);
+                    if (token != null) {
+                        Log.d(TAG, "Found approver token: " + token);
+                    }
+                }
+                if (token == null) {
+                    Log.e(TAG, "No token found for approver email: " + approverEmail);
                 }
                 listener.onTokenFetched(token);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(Request_ride.this, "Failed to fetch FCM token: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Failed to fetch approver token: " + databaseError.getMessage());
+                listener.onTokenFetched(null);
+            }
+        });
+    }
+
+    // Modified to fetch only requester token
+    private void fetchRequesterToken(String email, OnTokenFetchedListener listener) {
+        DatabaseReference usersRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("Registration_data");
+
+        usersRef.orderByChild("email").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String token = null;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    token = snapshot.child("fcm_token").getValue(String.class);
+                    if (token != null) {
+                        Log.d(TAG, "Found requester token: " + token);
+                    }
+                }
+                if (token == null) {
+                    Log.e(TAG, "No token found for requester email: " + email);
+                }
+                listener.onTokenFetched(token);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e(TAG, "Failed to fetch requester token: " + databaseError.getMessage());
+                listener.onTokenFetched(null);
             }
         });
     }
@@ -506,7 +582,7 @@ public class Request_ride extends AppCompatActivity {
     private void sendLocalNotification(String title, String message) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                Log.e("Notification", "Permission not granted, skipping notification.");
+                Log.e(TAG, "Permission not granted, skipping notification.");
                 return; // Don't send notification if permission is not granted
             }
         }
@@ -522,81 +598,87 @@ public class Request_ride extends AppCompatActivity {
         notificationManager.notify((int) System.currentTimeMillis(), builder.build());
     }
 
-    private void sendFCMNotification(int requestId, String requesterToken, String requesterDeviceId, String approverToken, String approverDeviceId) {
+    // New method to send FCM notifications using Retrofit
+    private void sendFCMNotifications(int requestId, String requesterToken, String approverToken) {
+        // Notification messages
         String titleRequester = "Ride Requested";
         String messageRequester = "Your ride request with ID " + requestId + " has been submitted.";
         String titleApprover = "Request Approval Pending";
         String messageApprover = "New ride request (ID: " + requestId + ") is pending your approval.";
 
-        // Logging device IDs
-        Log.d("PushLog", "Sending to Requester: DeviceID=" + requesterDeviceId + ", Token=" + requesterToken);
-        Log.d("PushLog", "Sending to Approver: DeviceID=" + approverDeviceId + ", Token=" + approverToken);
+        // Send to requester
+        sendNotificationWithRetrofit(requesterToken, titleRequester, messageRequester);
 
-        sendNotificationToDevice(requesterToken, titleRequester, messageRequester);
-        sendNotificationToDevice(approverToken, titleApprover, messageApprover);
+        // Send to approver
+        sendNotificationWithRetrofit(approverToken, titleApprover, messageApprover);
 
-        sendLocalNotification(titleRequester, messageRequester); // Optional local fallback
-        sendLocalNotification(titleApprover, messageApprover);
+        // Local fallback notifications (optional)
+        sendLocalNotification(titleRequester, messageRequester);
     }
 
-    private void sendNotificationToDevice(String token, String title, String message) {
-        try {
-            RequestQueue queue = Volley.newRequestQueue(this);
-            String url = "https://fcm.googleapis.com/v1/projects/cab-approval-system/messages:send\n";
+    private void sendNotificationWithRetrofit(String token, String title, String message) {
+        if (token == null || token.isEmpty()) {
+            Log.e(TAG, "Cannot send notification: token is null or empty");
+            return;
+        }
 
-            JSONObject json = new JSONObject();
-            json.put("to", token);  // ✅ FCM token
-            Log.d("to_token", token);
+        // Create the request body with the correct format for your backend
+        FCMRequest request = new FCMRequest(token, title, message);
 
-            JSONObject notification = new JSONObject();
-            notification.put("title", title);
-            notification.put("body", message);
-            notification.put("sound", "default");
+        // Log the request for debugging
+        Log.d(TAG, "Sending FCM notification to token: " + token);
+        Log.d(TAG, "Title: " + title);
+        Log.d(TAG, "Message: " + message);
 
-            json.put("notification", notification);
+        // Make the API call with retry logic
+        sendNotificationWithRetry(request, 0);
+    }
 
-            JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, json,
-                    response -> Log.d("FCM", "Notification sent successfully: " + response.toString()),
-                    error -> {
-                        Log.e("FCM", "Volley error: " + error.toString());
-                        if (error.networkResponse != null) {
-                            Log.e("FCM", "Status code: " + error.networkResponse.statusCode);
-                            try {
-                                String responseBody = new String(error.networkResponse.data, "utf-8");
-                                Log.e("FCM", "Error body: " + responseBody);
-                            } catch (UnsupportedEncodingException e) {
-                                Log.e("FCM", "Encoding error while reading error body: " + e.getMessage());
-                            }
-                        } else {
-                            Log.e("FCM", "NetworkResponse is null");
-                        }
-                    }) {
+    // 6. Add this retry method to handle timeouts
+    private void sendNotificationWithRetry(FCMRequest request, final int retryCount) {
+        final int MAX_RETRIES = 3;
 
-                @Override
-                public Map<String, String> getHeaders() {
-                    Map<String, String> headers = new HashMap<>();
-                    headers.put("Authorization", "key=6574b46cb1c850a522bc8244ea110cb68ecde71b"); // 🔐 Use "key=" prefix
-                    headers.put("Content-Type", "application/json");
-                    return headers;
-                }
-
-                @Override
-                public byte[] getBody() {
+        fcmService.sendNotification(request).enqueue(new Callback<FCMResponse>() {
+            @Override
+            public void onResponse(Call<FCMResponse> call, Response<FCMResponse> response) {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "Notification sent successfully: " + response.code());
+                    if (response.body() != null) {
+                        Log.d(TAG, "Success: " + response.body().success);
+                    }
+                } else {
+                    Log.e(TAG, "Failed to send notification: " + response.code());
                     try {
-                        String requestBody = json.toString();
-                        Log.d("FCM_BODY", requestBody);
-                        return requestBody.getBytes("utf-8");
-                    } catch (UnsupportedEncodingException e) {
-                        Log.e("FCM", "Encoding error: " + e.getMessage());
-                        return null;
+                        Log.e(TAG, "Error body: " + response.errorBody().string());
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error reading error body", e);
+                    }
+
+                    // Retry on server errors if we haven't exceeded max retries
+                    if (retryCount < MAX_RETRIES && (response.code() >= 500 || response.code() == 429)) {
+                        int nextRetryDelay = 1000 * (retryCount + 1); // Exponential backoff
+                        new Handler().postDelayed(() -> {
+                            Log.d(TAG, "Retrying notification sending, attempt " + (retryCount + 1));
+                            sendNotificationWithRetry(request, retryCount + 1);
+                        }, nextRetryDelay);
                     }
                 }
-            };
+            }
 
-            queue.add(request);
-        } catch (Exception e) {
-            Log.e("FCM", "Exception sending FCM: " + e.getMessage());
-        }
+            @Override
+            public void onFailure(Call<FCMResponse> call, Throwable t) {
+                Log.e(TAG, "Error sending notification", t);
+
+                // Retry on network failures if we haven't exceeded max retries
+                if (retryCount < MAX_RETRIES) {
+                    int nextRetryDelay = 1000 * (retryCount + 1); // Exponential backoff
+                    new Handler().postDelayed(() -> {
+                        Log.d(TAG, "Retrying notification sending after failure, attempt " + (retryCount + 1));
+                        sendNotificationWithRetry(request, retryCount + 1);
+                    }, nextRetryDelay);
+                }
+            }
+        });
     }
 
 
@@ -616,13 +698,13 @@ public class Request_ride extends AppCompatActivity {
         notificationData.put("status", "pending");
         notificationData.put("timestamp", formattedTime);
         notificationData.put("title", "Ride Request Pending");
-        notificationData.put("requester_email",email_id);
+        notificationData.put("requester_email", email_id);
 
-        Log.d("ARequest_id"," " + requestId);
+        Log.d(TAG, "Saving notification data for request ID: " + requestId);
 
         notificationRef.push().setValue(notificationData)
-                .addOnSuccessListener(aVoid -> Log.d("Notification", "Notification saved successfully"))
-                .addOnFailureListener(e -> Log.e("Notification", "Failed to save notification: " + e.getMessage()));
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Notification saved successfully"))
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to save notification: " + e.getMessage()));
     }
 
     private void fetchApproverEmail(String employeeEmail, OnApproverFetchedListener listener) {
@@ -636,12 +718,18 @@ public class Request_ride extends AppCompatActivity {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     approverEmail = snapshot.child("Email ID of Approver").getValue(String.class);
                 }
+                if (approverEmail != null) {
+                    Log.d(TAG, "Found approver email: " + approverEmail);
+                } else {
+                    Log.e(TAG, "No approver email found for: " + employeeEmail);
+                }
                 listener.onApproverFetched(approverEmail);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(Request_ride.this, "Failed to fetch approver email: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Failed to fetch approver email: " + databaseError.getMessage());
+                listener.onApproverFetched(null);
             }
         });
     }
@@ -650,72 +738,228 @@ public class Request_ride extends AppCompatActivity {
         void onApproverFetched(String approverEmail);
     }
 
-
     private void clearFields() {
         pickup.setText("");
         dropoff.setText("");
         time_selected.setText("");
         date_selected.setText("");
-        num_of_riders_edit_text.setText("0");
-        people_count.setText("0");
-        select_toggle_button.setChecked(false);
         purpose_of_ride.setText("");
         project.setText("");
         vehicle_type.setText("");
+        people_count.setText("0");
+        num_of_riders_edit_text.setText("0");
+        passenger_name_display.setText("");
+        passenger_name_display.setVisibility(View.GONE);
+
+        // Reset the toggle button state
+        select_toggle_button.setChecked(false);
+
+        // Clear passenger map
+        passengerMap.clear();
+
+        // Hide passenger layout
+        main_passenger_layout.setVisibility(View.GONE);
+        passengers_details.setVisibility(View.GONE);
+
+        // Show default count layout
+        num_of_people_horizontal_layout.setVisibility(View.VISIBLE);
+        num_of_riders_edit_text.setVisibility(View.GONE);
+
+        // Clear any generated passenger fields
+        passenger_layout.removeAllViews();
     }
-    public class RideRequest {
+
+    // Class to represent a ride request
+    public static class RideRequest {
         private int id;
         private String pickupLocation;
         private String dropoffLocation;
         private String time;
         private String date;
         private String purpose;
-        private String no_of_passengers ;
-        private String email;
-        private String vehicle_type;
+        private String numberOfPassengers;
+        private String requesterEmail;
         private Map<String, String> passengerNames;
-        String project_type;
+        private String project;
+        private String vehicleType;
+        private String status;
+        private long timestamp;
 
-        public RideRequest(){
+        // Default constructor required for Firebase
+        public RideRequest() {
         }
 
-        public RideRequest(int id, String pickupLocation, String dropoffLocation, String time, String date, String purpose, String no_of_passengers, String email, Map<String, String> passengerNames, String project_type, String vehicle_type) {
+        public RideRequest(int id, String pickupLocation, String dropoffLocation, String time,
+                           String date, String purpose, String numberOfPassengers,
+                           String requesterEmail, Map<String, String> passengerNames,
+                           String project, String vehicleType) {
             this.id = id;
             this.pickupLocation = pickupLocation;
             this.dropoffLocation = dropoffLocation;
             this.time = time;
             this.date = date;
             this.purpose = purpose;
-            this.no_of_passengers  = no_of_passengers;
-            this.email = email;
+            this.numberOfPassengers = numberOfPassengers;
+            this.requesterEmail = requesterEmail;
             this.passengerNames = passengerNames;
-            this.project_type = project_type;
-            this.vehicle_type =  vehicle_type;
+            this.project = project;
+            this.vehicleType = vehicleType;
+            this.status = "pending";
+            this.timestamp = System.currentTimeMillis();
         }
 
-        // Getters and Setters
-        public int getId() { return id; }
-        public void setId(int id) { this.id = id; }
-        public String getPickupLocation() { return pickupLocation; }
-        public void setPickupLocation(String pickupLocation) { this.pickupLocation = pickupLocation; }
-        public String getDropoffLocation() { return dropoffLocation; }
-        public void setDropoffLocation(String dropoffLocation) { this.dropoffLocation = dropoffLocation; }
-        public String getTime() { return time; }
-        public void setTime(String time) { this.time = time; }
-        public String getDate() { return date; }
-        public void setDate(String date) { this.date = date; }
-        public String getPurpose() { return purpose; }
-        public void setPurpose(String purpose) { this.purpose = purpose; }
-        public String getNo_of_passengers() { return no_of_passengers ; }
-        public void setNo_of_passengers(String no_of_passengers) { this.no_of_passengers  = no_of_passengers; }
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public Map<String, String> getPassengerNames() { return passengerNames; }
-        public void setPassengerNames(Map<String, String> passengerNames) { this.passengerNames = passengerNames; }
-        public String getProject_type(){return project_type;};
-        public void setProject_type(){this.project_type = project_type;}
-        public String getVehicle_type(){return vehicle_type;};
-        public void setVehicle_type(){this.vehicle_type = vehicle_type;}
+        // Getters and setters
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public String getPickupLocation() {
+            return pickupLocation;
+        }
+
+        public void setPickupLocation(String pickupLocation) {
+            this.pickupLocation = pickupLocation;
+        }
+
+        public String getDropoffLocation() {
+            return dropoffLocation;
+        }
+
+        public void setDropoffLocation(String dropoffLocation) {
+            this.dropoffLocation = dropoffLocation;
+        }
+
+        public String getTime() {
+            return time;
+        }
+
+        public void setTime(String time) {
+            this.time = time;
+        }
+
+        public String getDate() {
+            return date;
+        }
+
+        public void setDate(String date) {
+            this.date = date;
+        }
+
+        public String getPurpose() {
+            return purpose;
+        }
+
+        public void setPurpose(String purpose) {
+            this.purpose = purpose;
+        }
+
+        public String getNumberOfPassengers() {
+            return numberOfPassengers;
+        }
+
+        public void setNumberOfPassengers(String numberOfPassengers) {
+            this.numberOfPassengers = numberOfPassengers;
+        }
+
+        public String getRequesterEmail() {
+            return requesterEmail;
+        }
+
+        public void setRequesterEmail(String requesterEmail) {
+            this.requesterEmail = requesterEmail;
+        }
+
+        public Map<String, String> getPassengerNames() {
+            return passengerNames;
+        }
+
+        public void setPassengerNames(Map<String, String> passengerNames) {
+            this.passengerNames = passengerNames;
+        }
+
+        public String getProject() {
+            return project;
+        }
+
+        public void setProject(String project) {
+            this.project = project;
+        }
+
+        public String getVehicleType() {
+            return vehicleType;
+        }
+
+        public void setVehicleType(String vehicleType) {
+            this.vehicleType = vehicleType;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public long getTimestamp() {
+            return timestamp;
+        }
+
+        public void setTimestamp(long timestamp) {
+            this.timestamp = timestamp;
+        }
     }
 
+    // Handle back button press to navigate to previous activity
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        String email = getIntent().getStringExtra("email");
+        Intent intent = new Intent(Request_ride.this, Request_ride.class);
+        intent.putExtra("email", email);
+        startActivity(intent);
+        finish();
+    }
+
+    // Method to check if we need to resubscribe to FCM topic when app resumes
+    @Override
+    protected void onResume() {
+        super.onResume();
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        String token = task.getResult();
+                        // Update token in Firebase for the current user if needed
+                        if (email_id != null && !email_id.isEmpty()) {
+                            updateUserFCMToken(email_id, token);
+                        }
+                    }
+                });
+    }
+
+    private void updateUserFCMToken(String email, String token) {
+        DatabaseReference usersRef = FirebaseDatabase.getInstance("https://cab-approval-system-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("Registration_data");
+
+        usersRef.orderByChild("email").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    snapshot.getRef().child("fcm_token").setValue(token)
+                            .addOnSuccessListener(aVoid -> Log.d(TAG, "FCM token updated successfully"))
+                            .addOnFailureListener(e -> Log.e(TAG, "Failed to update FCM token", e));
+                    break; // Update only the first match
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e(TAG, "Error updating FCM token: " + databaseError.getMessage());
+            }
+        });
+    }
 }
