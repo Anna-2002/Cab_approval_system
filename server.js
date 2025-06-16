@@ -9,6 +9,7 @@ app.use(express.json());
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
 apiKey.apiKey = process.env.BREVO_API_KEY;
+const senderEmail = process.env.SENDER_EMAIL;
 
 app.post('/send-ride-email', async (req, res) => {
     const { requesterEmail, approverEmail, requestId } = req.body;
@@ -18,7 +19,7 @@ app.post('/send-ride-email', async (req, res) => {
         const requesterEmail = new SibApiV3Sdk.SendSmtpEmail();
         requesterEmail.sender = { 
             name: "Cab Approval System", 
-            email: "noreply@cabapproval.com" 
+            email: senderEmail 
         };
         requesterEmail.to = [{ email: requesterEmail }];
         requesterEmail.subject = `Ride Request #${requestId} Submitted`;
