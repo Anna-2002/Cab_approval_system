@@ -18,7 +18,6 @@ app.listen(PORT, () => {
     console.log(`[SERVER] Running on port ${PORT}`);
     console.log(`[SERVER] Brevo API Key: ${process.env.BREVO_API_KEY ? 'Exists' : 'MISSING!'}`);
     console.log(`[SERVER] Sender Email: ${process.env.SENDER_EMAIL || 'NOT SET!'}`);
-    console.log(`[SERVER] Service URL: https://cab-approval-system.onrender.com`);
 });
 
 app.post('/send-ride-email', async (req, res) => {
@@ -100,7 +99,6 @@ app.post('/send-ride-email', async (req, res) => {
 
     } catch (error) {
         console.error('[EMAIL NOTIFY] ❌ Error:', error.message);
-        console.error('[EMAIL NOTIFY] Full error:', error);
         res.status(500).json({ 
             success: false, 
             error: 'Failed to send emails',
@@ -118,8 +116,8 @@ app.get('/', (req, res) => {
     });
 });
 
-// Catch-all for debugging
-app.use('*', (req, res) => {
+// Fixed catch-all route with named parameter
+app.use('/*all', (req, res) => {
     console.log(`[SERVER] Unhandled request: ${req.method} ${req.originalUrl}`);
     res.status(404).json({ error: 'Endpoint not found' });
 });
