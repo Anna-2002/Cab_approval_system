@@ -33,7 +33,7 @@ app.post('/send-ride-email', async (req, res) => {
         const approverEmail = new SibApiV3Sdk.SendSmtpEmail();
         approverEmail.sender = { 
             name: "Cab Approval System", 
-            email: "noreply@cabapproval.com" 
+            email: senderEmail 
         };
         approverEmail.to = [{ email: approverEmail }];
         approverEmail.subject = `Approval Needed for Ride Request #${requestId}`;
