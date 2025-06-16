@@ -12,13 +12,23 @@ apiKey.apiKey = process.env.BREVO_API_KEY;
 const senderEmail = process.env.SENDER_EMAIL;
 
 app.post('/send-ride-email', async (req, res) => {
-    const { requesterEmail, approverEmail, requestId } = req.body;
+    const { 
+        requesterEmail,
+        requesterName,
+        approverEmail,
+        approverName,
+        approverRole,
+        requestId 
+    } = req.body;
 
     // Log incoming request data
     console.log(`[EMAIL NOTIFY] Ride request received.`);
     console.log(`[EMAIL NOTIFY] Request ID: ${requestId}`);
     console.log(`[EMAIL NOTIFY] Requester Email: ${requesterEmail}`);
     console.log(`[EMAIL NOTIFY] Approver Email: ${approverEmail}`);
+    console.log(`[EMAIL NOTIFY] Approver name: ${approverName}`);
+    console.log(`[EMAIL NOTIFY] Requester name: ${requesterName}`);
+    console.log(`[EMAIL NOTIFY] Approver role: ${approverRole}`);
 
     try {
         // Email to Requester
@@ -30,9 +40,10 @@ app.post('/send-ride-email', async (req, res) => {
         requesterEmailObj.to = [{ email: requesterEmail }];
         requesterEmailObj.subject = `Ride Request #${requestId} Submitted`;
         requesterEmailObj.htmlContent = `
-            <h3>Your Ride Request Has Been Submitted</h3>
+           <h3>Your Ride Request Has Been Submitted</h3>
+            <p>Hello ${requesterName},</p>
             <p>Request ID: ${requestId}</p>
-            <p>We've notified your approver and will update you once it's reviewed.</p>
+            <p>We've notified ${approverName} (${approverRole}) and will update you once it's reviewed.</p>
         `;
 
         // Email to Approver
@@ -44,9 +55,9 @@ app.post('/send-ride-email', async (req, res) => {
         approverEmailObj.to = [{ email: approverEmail }];
         approverEmailObj.subject = `Approval Needed for Ride Request #${requestId}`;
         approverEmailObj.htmlContent = `
-            <h3>New Ride Request Requires Approval</h3>
-            <p>Request ID: ${requestId}</p>
-            <p>Please review this request at your earliest convenience.</p>
+           <h3>New Ride Request Requires Approval</h3>
+            <p>Hello ${approverName},</p>
+            <p>Request ID: ${requestId} from ${requesterName} needs your approval as ${approverRole}.</p>
             <p><a href="YOUR_APP_URL/approval/${requestId}">Review Request</a></p>
         `;
 
