@@ -13,45 +13,56 @@ const senderEmail = process.env.SENDER_EMAIL;
 
 app.post('/send-ride-email', async (req, res) => {
     const { requesterEmail, approverEmail, requestId } = req.body;
-    
+
+    // Log incoming request data
+    console.log(`[EMAIL NOTIFY] Ride request received.`);
+    console.log(`[EMAIL NOTIFY] Request ID: ${requestId}`);
+    console.log(`[EMAIL NOTIFY] Requester Email: ${requesterEmail}`);
+    console.log(`[EMAIL NOTIFY] Approver Email: ${approverEmail}`);
+
     try {
         // Email to Requester
-        const requesterEmail = new SibApiV3Sdk.SendSmtpEmail();
-        requesterEmail.sender = { 
+        const requesterEmailObj = new SibApiV3Sdk.SendSmtpEmail();
+        requesterEmailObj.sender = { 
             name: "Cab Approval System", 
             email: senderEmail 
         };
-        requesterEmail.to = [{ email: requesterEmail }];
-        requesterEmail.subject = `Ride Request #${requestId} Submitted`;
-        requesterEmail.htmlContent = `
+        requesterEmailObj.to = [{ email: requesterEmail }];
+        requesterEmailObj.subject = `Ride Request #${requestId} Submitted`;
+        requesterEmailObj.htmlContent = `
             <h3>Your Ride Request Has Been Submitted</h3>
             <p>Request ID: ${requestId}</p>
             <p>We've notified your approver and will update you once it's reviewed.</p>
         `;
 
         // Email to Approver
-        const approverEmail = new SibApiV3Sdk.SendSmtpEmail();
-        approverEmail.sender = { 
+        const approverEmailObj = new SibApiV3Sdk.SendSmtpEmail();
+        approverEmailObj.sender = { 
             name: "Cab Approval System", 
             email: senderEmail 
         };
-        approverEmail.to = [{ email: approverEmail }];
-        approverEmail.subject = `Approval Needed for Ride Request #${requestId}`;
-        approverEmail.htmlContent = `
+        approverEmailObj.to = [{ email: approverEmail }];
+        approverEmailObj.subject = `Approval Needed for Ride Request #${requestId}`;
+        approverEmailObj.htmlContent = `
             <h3>New Ride Request Requires Approval</h3>
             <p>Request ID: ${requestId}</p>
             <p>Please review this request at your earliest convenience.</p>
             <p><a href="YOUR_APP_URL/approval/${requestId}">Review Request</a></p>
         `;
 
-        // Send both emails
         const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-        await apiInstance.sendTransacEmail(requesterEmail);
-        await apiInstance.sendTransacEmail(approverEmail);
-        
+
+        // Send to requester and log
+        await apiInstance.sendTransacEmail(requesterEmailObj);
+        console.log(`[EMAIL NOTIFY] Requester email sent to: ${requesterEmail}`);
+
+        // Send to approver and log
+        await apiInstance.sendTransacEmail(approverEmailObj);
+        console.log(`[EMAIL NOTIFY] Approver email sent to: ${approverEmail}`);
+
         res.status(200).send('Emails sent successfully');
     } catch (error) {
-        console.error('Brevo API Error:', error);
+        console.error('[EMAIL NOTIFY] Brevo API Error:', error);
         res.status(500).send('Error sending emails');
     }
 });
