@@ -117,8 +117,13 @@ app.post('/send-fh-approval-email', async (req, res) => {
         approverName,
         requestId,
         empId,
-        hrEmail
+        hrEmail,
+        hrName
     } = req.body;
+
+     if (!hrEmail) {
+        return res.status(400).json({ error: 'HR email not found for this FH' });
+    }
 
     if (!requesterEmail || !approverEmail || !requestId || !hrEmail) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -144,7 +149,7 @@ app.post('/send-fh-approval-email', async (req, res) => {
         hrEmailObj.to = [{ email: hrEmail }];
         hrEmailObj.subject = `HR Approval Needed for Ride Request #${requestId}`;
         hrEmailObj.htmlContent = `
-            <h3>HR Approval Required</h3>
+            <h3>Approval Required from ${hrName}</h3>
             <p>Employee: ${requesterName} (${empId})</p>
             <p>Request ID: <strong>${requestId}</strong></p>
             <p>Approved by FH: ${approverName}</p>
