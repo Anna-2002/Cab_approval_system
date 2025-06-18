@@ -116,10 +116,11 @@ app.post('/send-fh-approval-email', async (req, res) => {
         approverEmail,
         approverName,
         requestId,
-        empId
+        empId,
+        hrEmail
     } = req.body;
 
-    if (!requesterEmail || !approverEmail || !requestId) {
+    if (!requesterEmail || !approverEmail || !requestId || !hrEmail) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -138,10 +139,20 @@ app.post('/send-fh-approval-email', async (req, res) => {
             <p>It will now be processed by HR for final approval.</p>
         `;
 
-        // Email to HR (optional: you can add HR emails as ENV or skip if not needed)
-        // If you want to notify HR here, you can add logic to send to HR emails
+       const hrEmailObj = new SibApiV3Sdk.SendSmtpEmail();
+        hrEmailObj.sender = { name: "Cab Approval System", email: senderEmail };
+        hrEmailObj.to = [{ email: hrEmail }];
+        hrEmailObj.subject = `HR Approval Needed for Ride Request #${requestId}`;
+        hrEmailObj.htmlContent = `
+            <h3>HR Approval Required</h3>
+            <p>Employee: ${requesterName} (${empId})</p>
+            <p>Request ID: <strong>${requestId}</strong></p>
+            <p>Approved by FH: ${approverName}</p>
+            <p>Please review and approve this request.</p>
+        `;
 
         await apiInstance.sendTransacEmail(requesterEmailObj);
+        await apiInstance.sendTransacEmail(hrEmailObj);
 
         res.status(200).json({ 
             success: true, 
