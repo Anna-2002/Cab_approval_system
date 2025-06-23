@@ -215,6 +215,7 @@ app.post('/send-fh-rejection-email', async (req, res) => {
         res.status(500).json({ error: 'Email sending failed' });
     }
 });
+
 // HR Approval Endpoint (uses vendorEmail and vendorName from request body)
 app.post('/send-hr-approval-email', async (req, res) => {
     console.log(`[HR APPROVAL] Endpoint hit at ${new Date().toISOString()}`);
@@ -300,6 +301,7 @@ app.post('/send-hr-approval-email', async (req, res) => {
         });
     }
 });
+
 // Health check endpoint
 app.get('/', (req, res) => {
     res.json({ 
