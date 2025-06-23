@@ -112,8 +112,6 @@ app.post('/send-ride-email', async (req, res) => {
 app.post('/send-fh-approval-email', async (req, res) => {
     console.log(`[FH APPROVAL] Endpoint hit at ${new Date().toISOString()}`);
     console.log(`Sending mail to HR and Requester on approval by FH`);
-    console.log(`[EMAIL NOTIFY] ✅ Requester email sent to: ${requesterEmail}`);
-    console.log(`[EMAIL NOTIFY] ✅ HR email sent to: ${hrEmail}`);
     
     const { 
         requesterEmail,
@@ -125,6 +123,9 @@ app.post('/send-fh-approval-email', async (req, res) => {
         hrEmail,
         hrName
     } = req.body;
+
+    console.log(`[EMAIL NOTIFY] ✅ Requester email sent to: ${requesterEmail}`);
+    console.log(`[EMAIL NOTIFY] ✅ HR email sent to: ${hrEmail}`);
 
      if (!hrEmail) {
         return res.status(400).json({ error: 'HR email not found for this FH' });
