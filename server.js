@@ -20,6 +20,7 @@ app.listen(PORT, () => {
     console.log(`[SERVER] Sender Email: ${process.env.SENDER_EMAIL || 'NOT SET!'}`);
 });
 
+//initial stage email notification to FH and requester
 app.post('/send-ride-email', async (req, res) => {
     console.log(`[EMAIL NOTIFY] Endpoint hit at ${new Date().toISOString()}`);
     
@@ -107,11 +108,12 @@ app.post('/send-ride-email', async (req, res) => {
     }
 });
 
+//Email notification to HR and requester on FH approval 
 app.post('/send-fh-approval-email', async (req, res) => {
     console.log(`[FH APPROVAL] Endpoint hit at ${new Date().toISOString()}`);
     console.log(`Sending mail to HR and Requester on approval by FH`);
-     console.log(`[EMAIL NOTIFY] ✅ Requester email sent to: ${requesterEmail}`);
-     console.log(`[EMAIL NOTIFY] ✅ HR email sent to: ${hrEmail}`);
+    console.log(`[EMAIL NOTIFY] ✅ Requester email sent to: ${requesterEmail}`);
+    console.log(`[EMAIL NOTIFY] ✅ HR email sent to: ${hrEmail}`);
     
     const { 
         requesterEmail,
@@ -178,6 +180,41 @@ app.post('/send-fh-approval-email', async (req, res) => {
     }
 });
 
+//email notication of Rejection of approval by FH to requester
+app.post('/send-fh-rejection-email', async (req, res) => {
+    console.log(`[FH Rejection] Endpoint hit at ${new Date().toISOString()}`);
+    console.log(`Sending mail to Requester on rejection by FH`);
+    console.log(`[EMAIL NOTIFY] ✅ Requester email sent to: ${requesterEmail}`);
+    
+    const { 
+        requesterEmail,
+        requesterName,
+        approverEmail,
+        approverName,
+        requestId,
+        empId,
+        rejectionReason
+    } = req.body;
+
+    try {
+        // Email to Requester ONLY
+        const emailObj = new SibApiV3Sdk.SendSmtpEmail();
+        emailObj.to = [{ email: requesterEmail }];
+        emailObj.subject = `Ride Request #${requestId} Rejected`;
+        emailObj.htmlContent = `
+            <h3>Request Rejected by Functional Head</h3>
+            <p>Hello ${requesterName},</p>
+            <p>Your cab request (ID: ${requestId}) has been rejected by ${approverName}.</p>
+            <p><strong>Reason:</strong> ${rejectionReason}</p>
+        `;
+
+        await apiInstance.sendTransacEmail(emailObj);
+        res.status(200).json({ success: true });
+    } catch (error) {
+        console.error('Rejection email error:', error);
+        res.status(500).json({ error: 'Email sending failed' });
+    }
+});
 // HR Approval Endpoint (uses vendorEmail and vendorName from request body)
 app.post('/send-hr-approval-email', async (req, res) => {
     console.log(`[HR APPROVAL] Endpoint hit at ${new Date().toISOString()}`);
