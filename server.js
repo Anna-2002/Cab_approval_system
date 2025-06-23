@@ -109,6 +109,9 @@ app.post('/send-ride-email', async (req, res) => {
 
 app.post('/send-fh-approval-email', async (req, res) => {
     console.log(`[FH APPROVAL] Endpoint hit at ${new Date().toISOString()}`);
+    console.log(`Sending mail to HR and Requester on approval by FH`);
+     console.log(`[EMAIL NOTIFY] ✅ Requester email sent to: ${requesterEmail}`);
+     console.log(`[EMAIL NOTIFY] ✅ HR email sent to: ${hrEmail}`);
     
     const { 
         requesterEmail,
@@ -149,7 +152,7 @@ app.post('/send-fh-approval-email', async (req, res) => {
         hrEmailObj.to = [{ email: hrEmail }];
         hrEmailObj.subject = `HR Approval Needed for Ride Request #${requestId}`;
         hrEmailObj.htmlContent = `
-            <h3>Approval Required from ${hrName}</h3>
+            <h3>Approval Required from ${hrName} HR Head</h3>
             <p>Employee: ${requesterName} (${empId})</p>
             <p>Request ID: <strong>${requestId}</strong></p>
             <p>Approved by FH: ${approverName}</p>
@@ -178,6 +181,10 @@ app.post('/send-fh-approval-email', async (req, res) => {
 // HR Approval Endpoint (uses vendorEmail and vendorName from request body)
 app.post('/send-hr-approval-email', async (req, res) => {
     console.log(`[HR APPROVAL] Endpoint hit at ${new Date().toISOString()}`);
+    console.log(`Sending mail to Requester , FH and Vendor on approval by FH`);
+    console.log(`[EMAIL NOTIFY] ✅ Requester email sent to: ${requesterEmail}`);
+    console.log(`[EMAIL NOTIFY] ✅ FH email sent to: ${fhApproverEmail}`);
+    console.log(`[EMAIL NOTIFY] ✅ vendor email sent to: ${vendorEmail}`);
     
     const { 
         requesterEmail,
