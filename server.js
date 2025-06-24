@@ -242,14 +242,29 @@ app.post('/send-hr-approval-email', async (req, res) => {
     console.log(`[EMAIL NOTIFY] ✅ FH email sent to: ${fhApproverEmail}`);
     console.log(`[EMAIL NOTIFY] ✅ vendor email sent to: ${vendorEmail}`);
 
+    // Validate required fields
+    const requiredFields = [
+        'requesterEmail', 'requestId', 'vendorEmail', 'vendorName',
+        'approverEmail', 'approverName'
+    ];
+    
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+
     if (!requesterEmail || !requestId || !vendorEmail || !vendorName) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    if (missingFields.length > 0) {
+        return res.status(400).json({
+            error: `Missing required fields: ${missingFields.join(', ')}`
+        });
+    }
+    
     try {
         const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-
+        const emailsToSend = [];
         // Email to Requester
+        // 1. Requester Email (always sent)
         const requesterEmailObj = new SibApiV3Sdk.SendSmtpEmail();
         requesterEmailObj.sender = { name: "Cab Approval System", email: senderEmail };
         requesterEmailObj.to = [{ email: requesterEmail }];
@@ -257,23 +272,12 @@ app.post('/send-hr-approval-email', async (req, res) => {
         requesterEmailObj.htmlContent = `
             <h3>Final Approval Received!</h3>
             <p>Hello ${requesterName},</p>
-            <p>Your cab request (ID: ${requestId}) has been fully approved and sent to the vendor.</p>
+            <p>Your cab request (ID: ${requestId}) has been fully approved.</p>
             <p>The vendor (${vendorName}) will contact you soon.</p>
         `;
+        emailsToSend.push(apiInstance.sendTransacEmail(requesterEmailObj));
 
-        // Email to FH
-        const fhEmailObj = new SibApiV3Sdk.SendSmtpEmail();
-        fhEmailObj.sender = { name: "Cab Approval System", email: senderEmail };
-        fhEmailObj.to = [{ email: fhApproverEmail }];
-        fhEmailObj.subject = `Ride Request #${requestId} Approved by HR`;
-        fhEmailObj.htmlContent = `
-            <h3>HR Approved Your Request</h3>
-            <p>Hello ${fhApproverName},</p>
-            <p>The request you approved (ID: ${requestId}) has been finalized by HR.</p>
-            <p>Vendor: ${vendorName} (${vendorEmail})</p>
-        `;
-
-        // Email to Vendor
+        // 2. Vendor Email (always sent)
         const vendorEmailObj = new SibApiV3Sdk.SendSmtpEmail();
         vendorEmailObj.sender = { name: "Cab Approval System", email: senderEmail };
         vendorEmailObj.to = [{ email: vendorEmail }];
@@ -282,19 +286,33 @@ app.post('/send-hr-approval-email', async (req, res) => {
             <h3>Cab Assignment Required</h3>
             <p><strong>Request ID:</strong> ${requestId}</p>
             <p><strong>Employee:</strong> ${requesterName} (${empId})</p>
-            <p>This request has been approved by FH (${fhApproverName}) and HR (${approverName}).</p>
+            <p>Approved by HR: ${approverName}</p>
         `;
+        emailsToSend.push(apiInstance.sendTransacEmail(vendorEmailObj));
 
-        await Promise.all([
-            apiInstance.sendTransacEmail(requesterEmailObj),
-            apiInstance.sendTransacEmail(fhEmailObj),
-            apiInstance.sendTransacEmail(vendorEmailObj)
-        ]);
+       // 3. FH Email (conditional - only for regular employees)
+        if (fhApproverEmail && fhApproverName) {
+            const fhEmailObj = new SibApiV3Sdk.SendSmtpEmail();
+            fhEmailObj.sender = { name: "Cab Approval System", email: senderEmail };
+            fhEmailObj.to = [{ email: fhApproverEmail }];
+            fhEmailObj.subject = `Ride Request #${requestId} Approved by HR`;
+            fhEmailObj.htmlContent = `
+                <h3>HR Approved Your Request</h3>
+                <p>Hello ${fhApproverName},</p>
+                <p>The request you approved (ID: ${requestId}) has been finalized by HR.</p>
+                <p>Vendor: ${vendorName} (${vendorEmail})</p>
+            `;
+            emailsToSend.push(apiInstance.sendTransacEmail(fhEmailObj));
+        }
+
+        // Send all emails concurrently
+        await Promise.all(emailsToSend);
 
         res.status(200).json({ 
             success: true, 
             message: 'HR approval emails sent successfully',
-            requestId: requestId
+            requestId: requestId,
+            emailsSent: emailsToSend.length
         });
 
     } catch (error) {
@@ -306,7 +324,6 @@ app.post('/send-hr-approval-email', async (req, res) => {
         });
     }
 });
-
 // Health check endpoint
 app.get('/', (req, res) => {
     res.json({ 
