@@ -224,9 +224,6 @@ app.post('/send-fh-rejection-email', async (req, res) => {
 app.post('/send-hr-approval-email', async (req, res) => {
     console.log(`[HR APPROVAL] Endpoint hit at ${new Date().toISOString()}`);
     console.log(`Sending mail to Requester , FH and Vendor on approval by FH`);
-    console.log(`[EMAIL NOTIFY] ✅ Requester email sent to: ${requesterEmail}`);
-    console.log(`[EMAIL NOTIFY] ✅ FH email sent to: ${fhApproverEmail}`);
-    console.log(`[EMAIL NOTIFY] ✅ vendor email sent to: ${vendorEmail}`);
     
     const { 
         requesterEmail,
@@ -240,6 +237,10 @@ app.post('/send-hr-approval-email', async (req, res) => {
         vendorEmail,
         vendorName
     } = req.body;
+
+    console.log(`[EMAIL NOTIFY] ✅ Requester email sent to: ${requesterEmail}`);
+    console.log(`[EMAIL NOTIFY] ✅ FH email sent to: ${fhApproverEmail}`);
+    console.log(`[EMAIL NOTIFY] ✅ vendor email sent to: ${vendorEmail}`);
 
     if (!requesterEmail || !requestId || !vendorEmail || !vendorName) {
         return res.status(400).json({ error: 'Missing required fields' });
