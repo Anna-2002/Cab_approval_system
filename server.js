@@ -333,6 +333,9 @@ app.get('/', (req, res) => {
     });
 });
 
+setInterval(() => {
+  https.get("https://cab-approval-system.onrender.com");
+}, 300000); 
 // Fixed catch-all route with named parameter
 app.use('/*all', (req, res) => {
     console.log(`[SERVER] Unhandled request: ${req.method} ${req.originalUrl}`);
