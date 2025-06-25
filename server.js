@@ -222,7 +222,7 @@ app.post('/send-fh-rejection-email', async (req, res) => {
 });
 
 // HR Approval for regular employee Endpoint (uses vendorEmail and vendorName from request body)
-app.post('/send-hr-approval-email/regular', async (req, res) => {
+app.post('/send-hr-approval-email-regular', async (req, res) => {
     console.log(`[HR APPROVAL] Endpoint hit at ${new Date().toISOString()}`);
     console.log(`Sending mail to Requester , FH and Vendor on approval by HR`);
     
@@ -249,6 +249,7 @@ app.post('/send-hr-approval-email/regular', async (req, res) => {
     }
     
     try {
+        console.log(`[HR APPROVAL] Sending email to ${requesterEmail}`);
         const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
         const emailsToSend = [];
         // Email to Requester
@@ -312,7 +313,7 @@ app.post('/send-hr-approval-email/regular', async (req, res) => {
 });
 
 // HR Approval Endpoint for FH as an employee (uses vendorEmail and vendorName from request body)
-app.post('/send-hr-approval-email/fh-as-employee', async (req, res) => {
+app.post('/send-hr-approval-email-fh-as-employee', async (req, res) => {
     console.log(`[HR APPROVAL - FH AS EMPLOYEE] Endpoint hit at ${new Date().toISOString()}`);
 
     const { 
