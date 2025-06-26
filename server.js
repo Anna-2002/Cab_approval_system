@@ -385,6 +385,99 @@ app.post('/send-hr-approval-email-fh-as-employee', async (req, res) => {
     }
 });
 
+//Request rejection by HR : mail sent to FH and requester 
+app.post('/send-hr-rejection-email/regular', async (req, res) => {
+    console.log(`[HR REJECTION - REGULAR EMPLOYEE] Endpoint hit at ${new Date().toISOString()}`);
+    const { 
+        requesterEmail, 
+        requesterName, 
+        approverEmail, 
+        approverName,
+        requestId, 
+        empId, 
+        rejectionReason,
+        fhApproverEmail, 
+        fhApproverName
+    } = req.body;
+    
+    console.log(`[EMAIL NOTIFY] ✅ Requester(FH) email sent to: ${requesterEmail}`);
+    console.log(`[EMAIL NOTIFY] ✅ FH email sent to: ${fhApproverEmail}`);
+    
+    try {
+        const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+        const emailsToSend = [];
+
+        // 1. Email to requester
+        const requesterEmailObj = new SibApiV3Sdk.SendSmtpEmail();
+        requesterEmailObj.sender = { name: "Cab Approval System", email: senderEmail };
+        requesterEmailObj.to = [{ email: requesterEmail }];
+        requesterEmailObj.subject = `❌ Request #${requestId} Rejected by HR`;
+        requesterEmailObj.htmlContent = `
+            <h3>Request Rejected</h3>
+            <p>Hello ${requesterName},</p>
+            <p>Your cab request (ID: ${requestId}) has been rejected by HR.</p>
+            <p><strong>Reason:</strong> ${rejectionReason}</p>
+        `;
+        emailsToSend.push(apiInstance.sendTransacEmail(requesterEmailObj));
+
+        // 2. Email to FH approver
+        const fhEmailObj = new SibApiV3Sdk.SendSmtpEmail();
+        fhEmailObj.sender = { name: "Cab Approval System", email: senderEmail };
+        fhEmailObj.to = [{ email: fhApproverEmail }];
+        fhEmailObj.subject = `Request #${requestId} Rejected by HR`;
+        fhEmailObj.htmlContent = `
+            <h3>HR Rejected Your Approved Request</h3>
+            <p>Hello ${fhApproverName},</p>
+            <p>The request you approved (ID: ${requestId}) has been rejected by HR.</p>
+            <p><strong>Reason:</strong> ${rejectionReason}</p>
+        `;
+        emailsToSend.push(apiInstance.sendTransacEmail(fhEmailObj));
+
+        await Promise.all(emailsToSend);
+        res.status(200).json({ success: true });
+    } catch (error) {
+        console.error("[HR REJECTION - REGULAR] Error:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// FH-as-employee HR rejection
+app.post('/send-hr-rejection-email/fh-as-employee', async (req, res) => {
+    console.log(`[HR REJECTION - FH AS EMPLOYEE] Endpoint hit at ${new Date().toISOString()}`);
+    const { 
+        requesterEmail, 
+        requesterName, 
+        approverEmail, 
+        approverName,
+        requestId, 
+        empId, 
+        rejectionReason
+    } = req.body;
+
+    console.log(`[EMAIL NOTIFY] ✅ Requester(FH) email sent to: ${requesterEmail}`);
+    console.log(`[EMAIL NOTIFY] ✅ FH email sent to: ${approverEmail}`);
+    try {
+        const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+        
+        // Only send to requester (who is FH)
+        const emailObj = new SibApiV3Sdk.SendSmtpEmail();
+        emailObj.sender = { name: "Cab Approval System", email: senderEmail };
+        emailObj.to = [{ email: requesterEmail }];
+        emailObj.subject = `❌ Request #${requestId} Rejected by HR`;
+        emailObj.htmlContent = `
+            <h3>Request Rejected</h3>
+            <p>Hello ${requesterName},</p>
+            <p>Your cab request (ID: ${requestId}) has been rejected by HR.</p>
+            <p><strong>Reason:</strong> ${rejectionReason}</p>
+        `;
+        
+        await apiInstance.sendTransacEmail(emailObj);
+        res.status(200).json({ success: true });
+    } catch (error) {
+        console.error("[HR REJECTION - FH] Error:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 // Health check endpoint
 app.get('/', (req, res) => {
     res.json({ 
