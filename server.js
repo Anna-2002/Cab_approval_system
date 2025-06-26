@@ -478,6 +478,110 @@ app.post('/send-hr-rejection-email/fh-as-employee', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
+// For HR/FH notification (cab details sent to requester)
+app.post('/send-assignment-notification', async (req, res) => {
+    console.log(`[ASSIGNMENT NOTIFY] Endpoint hit at ${new Date().toISOString()}`);
+    
+    const { 
+        toEmail,
+        requesterName,
+        requestId
+    } = req.body;
+
+    // Validate required fields
+    if (!toEmail || !requestId) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    try {
+        const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+        
+        const emailObj = new SibApiV3Sdk.SendSmtpEmail();
+        emailObj.sender = { name: "Cab Approval System", email: senderEmail };
+        emailObj.to = [{ email: toEmail }];
+        emailObj.subject = `Cab Details Sent for Request #${requestId}`;
+        emailObj.htmlContent = `
+            <h3>Cab Details Delivered</h3>
+            <p>Cab details for ${requesterName}'s request (ID: ${requestId}) have been sent to the employee.</p>
+            <p>The vendor will coordinate directly with the requester.</p>
+        `;
+
+        await apiInstance.sendTransacEmail(emailObj);
+        
+        res.status(200).json({ 
+            success: true,
+            message: 'Assignment notification sent',
+            recipient: toEmail,
+            requestId: requestId
+        });
+    } catch (error) {
+        console.error('[ASSIGNMENT NOTIFY] Error:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to send assignment notification',
+            details: error.message 
+        });
+    }
+});
+
+// For requester notification (with driver details)
+app.post('/send-requester-notification', async (req, res) => {
+    console.log(`[REQUESTER NOTIFY] Endpoint hit at ${new Date().toISOString()}`);
+    
+    const { 
+        toEmail,
+        requesterName,
+        driverName,
+        driverMobile,
+        cabNumber,
+        requestId
+    } = req.body;
+
+    // Validate required fields
+    const requiredFields = ['toEmail', 'requesterName', 'driverName', 'driverMobile', 'cabNumber', 'requestId'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    
+    if (missingFields.length > 0) {
+        return res.status(400).json({ 
+            error: `Missing required fields: ${missingFields.join(', ')}` 
+        });
+    }
+
+    try {
+        const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+        
+        const emailObj = new SibApiV3Sdk.SendSmtpEmail();
+        emailObj.sender = { name: "Cab Approval System", email: senderEmail };
+        emailObj.to = [{ email: toEmail }];
+        emailObj.subject = `🚕 Your Cab Details for Request #${requestId}`;
+        emailObj.htmlContent = `
+            <h3>Your Cab Has Been Assigned!</h3>
+            <p>Hello ${requesterName},</p>
+            <p>Your cab for request <strong>#${requestId}</strong> has been assigned:</p>
+            <p><strong>Driver:</strong> ${driverName}</p>
+            <p><strong>Contact:</strong> ${driverMobile}</p>
+            <p><strong>Cab Number:</strong> ${cabNumber}</p>
+            <p>The driver will contact you directly for pickup coordination.</p>
+        `;
+
+        await apiInstance.sendTransacEmail(emailObj);
+        
+        res.status(200).json({ 
+            success: true,
+            message: 'Requester notification sent',
+            requestId: requestId
+        });
+    } catch (error) {
+        console.error('[REQUESTER NOTIFY] Error:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to send requester notification',
+            details: error.message 
+        });
+    }
+});
+
 // Health check endpoint
 app.get('/', (req, res) => {
     res.json({ 
